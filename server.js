@@ -1,3 +1,4 @@
+// server.js
 import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import twilio from 'twilio';
@@ -5,27 +6,30 @@ import twilio from 'twilio';
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// ---- Sanity check des ENV ----
+// --------- ENV sanity check ---------
 const { XI_API_KEY, AGENT_ID } = process.env;
-console.log('XI_API_KEY length:', (XI_API_KEY || '').length);
-console.log('AGENT_ID:', AGENT_ID || '(none)');
+console.log('[BOOT] XI_API_KEY length =', (XI_API_KEY || '').length);
+console.log('[BOOT] AGENT_ID =', AGENT_ID || '(none)');
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// Health check
+// Healthcheck
 app.get('/', (_req, res) => res.status(200).send('OK'));
 
-// ---- Twilio webhook: renvoie le TwiML qui connecte un Stream WS vers CE service ----
+// --------- Twilio webhook: returns TwiML that streams to this server ---------
 app.post('/voice', (req, res) => {
+  console.log('[Twilio] /voice hit from', req.ip, 'host=', req.headers.host);
+
   const VoiceResponse = twilio.twiml.VoiceResponse;
   const twiml = new VoiceResponse();
 
-  // agent_id prioritaire: query param > env
+  // agent_id priority: query param > env
   const agentId = (req.query.agent_id && String(req.query.agent_id)) || AGENT_ID || '';
 
-  // URL WS publique de ce service Render (Twilio va s’y connecter)
+  // Public WS URL of this service (Twilio connects here)
   const wsUrl = `wss://${req.headers.host}/ws${agentId ? `?agent_id=${encodeURIComponent(agentId)}` : ''}`;
+  console.log('[Twilio] will stream to', wsUrl);
 
   const connect = twiml.connect();
   connect.stream({ url: wsUrl });
@@ -33,27 +37,28 @@ app.post('/voice', (req, res) => {
   res.type('text/xml').send(twiml.toString());
 });
 
-// ---- HTTP + Upgrade → /ws ----
+// --------- HTTP server + WS upgrade handler ---------
 const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`[BOOT] Server running on port ${PORT}`);
 });
 
 const wss = new WebSocketServer({ noServer: true });
 
 server.on('upgrade', (req, socket, head) => {
   try {
+    console.log('[WS] upgrade request', req.url);
     if (req.url && req.url.startsWith('/ws')) {
       wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
     } else {
       socket.destroy();
     }
   } catch (e) {
-    console.error('Upgrade error:', e);
+    console.error('[WS] upgrade error:', e);
     socket.destroy();
   }
 });
 
-// ---- Bridge Twilio <-> ElevenLabs ConvAI ----
+// --------- Bridge Twilio <-> ElevenLabs ConvAI ---------
 wss.on('connection', (twilioWS, req) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const agentId = url.searchParams.get('agent_id') || AGENT_ID;
@@ -69,26 +74,22 @@ wss.on('connection', (twilioWS, req) => {
     return;
   }
 
-  // ✅ URL correcte pour l’Agents Platform (ConvAI)
+  // ✅ Correct WS endpoint for Agents Platform (ConvAI)
   const elevenUrl = `wss://api.elevenlabs.io/v1/convai/ws?agent_id=${encodeURIComponent(agentId)}`;
+  console.log('[INFO] Opening EL ws →', elevenUrl);
 
-  // Ouverture du WS vers ElevenLabs avec header d’auth
   const elWS = new WebSocket(elevenUrl, {
-    headers: {
-      'xi-api-key': XI_API_KEY,   // IMPORTANT: header exact (pas Authorization)
-    },
+    headers: { 'xi-api-key': XI_API_KEY }, // must be exactly 'xi-api-key'
     perMessageDeflate: false,
   });
 
-  console.log('[INFO] Opening EL ws →', elevenUrl);
-
-  // Keepalive simple
+  // Keepalive to avoid idle timeouts
   const pingTimer = setInterval(() => {
     try { if (twilioWS.readyState === WebSocket.OPEN) twilioWS.ping(); } catch {}
     try { if (elWS.readyState === WebSocket.OPEN && typeof elWS.ping === 'function') elWS.ping(); } catch {}
   }, 20000);
 
-  // --- Events EL ---
+  // ----- ElevenLabs events -----
   elWS.on('open', () => console.log('[EL] ws open ✅'));
   elWS.on('close', (code, reason) => {
     console.log('[EL] ws closed', code, reason?.toString?.());
@@ -97,7 +98,7 @@ wss.on('connection', (twilioWS, req) => {
   });
   elWS.on('error', (e) => console.error('[EL] ws error', e?.message || e));
 
-  // --- Events Twilio ---
+  // ----- Twilio events -----
   twilioWS.on('close', (code, reason) => {
     console.log('[Twilio] ws closed', code, reason?.toString?.());
     clearInterval(pingTimer);
@@ -105,11 +106,10 @@ wss.on('connection', (twilioWS, req) => {
   });
   twilioWS.on('error', (e) => console.error('[Twilio] ws error', e?.message || e));
 
-  // --- Pipe binaire (pass-through) ---
+  // ----- Binary passthrough -----
   twilioWS.on('message', (msg) => {
     if (elWS.readyState === WebSocket.OPEN) elWS.send(msg);
   });
-
   elWS.on('message', (msg) => {
     if (twilioWS.readyState === WebSocket.OPEN) twilioWS.send(msg);
   });
