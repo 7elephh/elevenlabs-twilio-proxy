@@ -79,7 +79,11 @@ wss.on('connection', (twilioWS, req) => {
   console.log('[INFO] Opening EL ws →', elevenUrl);
 
   const elWS = new WebSocket(elevenUrl, {
-    headers: { 'xi-api-key': XI_API_KEY }, // must be exactly 'xi-api-key'
+    headers: {
+      'xi-api-key': XI_API_KEY,              // important: exact header name
+      'Origin': 'https://elevenlabs.io',     // <-- ajout pour éviter 403
+      // 'User-Agent': 'twilio-bridge/1.0',  // (optionnel) à activer si besoin
+    },
     perMessageDeflate: false,
   });
 
