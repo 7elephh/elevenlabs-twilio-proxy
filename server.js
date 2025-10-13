@@ -7,19 +7,16 @@ const PORT = process.env.PORT || 10000;
 
 // ---- Sanity check des ENV ----
 const { XI_API_KEY, AGENT_ID } = process.env;
-if (!XI_API_KEY) console.warn('[WARN] XI_API_KEY manquante');
-if (!AGENT_ID)  console.warn('[WARN] AGENT_ID manquante');
+console.log('XI_API_KEY length:', (XI_API_KEY || '').length);
+console.log('AGENT_ID:', AGENT_ID || '(none)');
 
-// ---- Middlewares ----
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // Health check
-app.get('/', (_req, res) => {
-  res.status(200).send('OK');
-});
+app.get('/', (_req, res) => res.status(200).send('OK'));
 
-// ---- Twilio webhook: génère le TwiML qui connecte un Stream WS vers notre serveur ----
+// ---- Twilio webhook: renvoie le TwiML qui connecte un Stream WS vers CE service ----
 app.post('/voice', (req, res) => {
   const VoiceResponse = twilio.twiml.VoiceResponse;
   const twiml = new VoiceResponse();
@@ -27,8 +24,7 @@ app.post('/voice', (req, res) => {
   // agent_id prioritaire: query param > env
   const agentId = (req.query.agent_id && String(req.query.agent_id)) || AGENT_ID || '';
 
-  // URL WS publique de ce service Render (Twilio va s'y connecter)
-  // IMPORTANT: wss:// + host + /ws + ?agent_id=...
+  // URL WS publique de ce service Render (Twilio va s’y connecter)
   const wsUrl = `wss://${req.headers.host}/ws${agentId ? `?agent_id=${encodeURIComponent(agentId)}` : ''}`;
 
   const connect = twiml.connect();
@@ -37,7 +33,7 @@ app.post('/voice', (req, res) => {
   res.type('text/xml').send(twiml.toString());
 });
 
-// ---- Serveur HTTP + WS UPGRADE ----
+// ---- HTTP + Upgrade → /ws ----
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
@@ -57,7 +53,7 @@ server.on('upgrade', (req, socket, head) => {
   }
 });
 
-// ---- Bridge Twilio <-> ElevenLabs ----
+// ---- Bridge Twilio <-> ElevenLabs ConvAI ----
 wss.on('connection', (twilioWS, req) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const agentId = url.searchParams.get('agent_id') || AGENT_ID;
@@ -67,20 +63,19 @@ wss.on('connection', (twilioWS, req) => {
     try { twilioWS.close(1011, 'Missing agent_id'); } catch {}
     return;
   }
-
   if (!XI_API_KEY) {
     console.error('[ERR] Missing XI_API_KEY');
     try { twilioWS.close(1011, 'Missing XI_API_KEY'); } catch {}
     return;
   }
 
-  const elevenUrl = `wss://api.elevenlabs.io/v1/telephony/ws?agent_id=${encodeURIComponent(agentId)}`;
+  // ✅ URL correcte pour l’Agents Platform (ConvAI)
+  const elevenUrl = `wss://api.elevenlabs.io/v1/convai/ws?agent_id=${encodeURIComponent(agentId)}`;
 
-  // Ouverture du WS vers ElevenLabs avec headers d’auth
+  // Ouverture du WS vers ElevenLabs avec header d’auth
   const elWS = new WebSocket(elevenUrl, {
     headers: {
-      'xi-api-key': XI_API_KEY,
-      'Origin': 'https://elevenlabs.io',
+      'xi-api-key': XI_API_KEY,   // IMPORTANT: header exact (pas Authorization)
     },
     perMessageDeflate: false,
   });
@@ -90,11 +85,11 @@ wss.on('connection', (twilioWS, req) => {
   // Keepalive simple
   const pingTimer = setInterval(() => {
     try { if (twilioWS.readyState === WebSocket.OPEN) twilioWS.ping(); } catch {}
-    try { if (elWS.readyState === WebSocket.OPEN) elWS.ping?.(); } catch {}
+    try { if (elWS.readyState === WebSocket.OPEN && typeof elWS.ping === 'function') elWS.ping(); } catch {}
   }, 20000);
 
   // --- Events EL ---
-  elWS.on('open', () => console.log('[EL] ws open'));
+  elWS.on('open', () => console.log('[EL] ws open ✅'));
   elWS.on('close', (code, reason) => {
     console.log('[EL] ws closed', code, reason?.toString?.());
     clearInterval(pingTimer);
@@ -110,14 +105,12 @@ wss.on('connection', (twilioWS, req) => {
   });
   twilioWS.on('error', (e) => console.error('[Twilio] ws error', e?.message || e));
 
-  // --- Pipe binaire ---
+  // --- Pipe binaire (pass-through) ---
   twilioWS.on('message', (msg) => {
-    // données audio + events Twilio → envoie à EL si ouvert
     if (elWS.readyState === WebSocket.OPEN) elWS.send(msg);
   });
 
   elWS.on('message', (msg) => {
-    // audio/commands EL → renvoi à Twilio
     if (twilioWS.readyState === WebSocket.OPEN) twilioWS.send(msg);
   });
 });
