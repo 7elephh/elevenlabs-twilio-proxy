@@ -9,7 +9,7 @@
   "dependencies": {
     "express": "^4.19.2",
     "ws": "^8.16.0",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
     "twilio": "^4.22.0"
   }
 }
