@@ -33,7 +33,7 @@ export const REC_HZ = 240;
 /** Where the ball sits for the shot, and where the goal is. */
 export const SCENE = {
   ball: V(0, DIM.ballR, 0),
-  goalX: 24.0,
+  goalX: 18.3,   // solved: the distance at which this kick arrives under the bar
   goalHalfWidth: 3.66,
   goalHeight: 2.44,
   wallX: 9.15,
@@ -64,7 +64,7 @@ function makeWorld() {
   const matTurf = new CANNON.Material('turf');
 
   world.addContactMaterial(new CANNON.ContactMaterial(matLimb, matBall, {
-    friction: 0.9, restitution: 0.52,
+    friction: 0.9, restitution: 0.62,
     contactEquationStiffness: 5e8, contactEquationRelaxation: 2,
   }));
   // Soft and slippery: a boot grazing the grass at 15 m/s slides, it does not
@@ -158,7 +158,7 @@ function power(t, bone) {
 
 const scaled = (g, s) => ({ kp: g.kp * s, kd: g.kd * Math.sqrt(s), maxTorque: g.maxTorque * s });
 
-function actuate(bones, t, aim, shift) {
+export function actuateAt(bones, t, aim, shift) {
   const { q, pelvisPos } = targetsAt(t, aim);
 
   // pelvis: a force/torque "harness" standing in for the balance and
@@ -213,7 +213,7 @@ function restore(bones, order, snap) {
   });
 }
 
-function makeBall(world, material, pos) {
+export function makeBallIn(world, material, pos) {
   const b = new CANNON.Body({
     mass: DIM.ballMass, material,
     shape: new CANNON.Sphere(DIM.ballR),
@@ -228,7 +228,7 @@ function makeBall(world, material, pos) {
   return b;
 }
 
-function buildScene(aim, shift) {
+export function buildSceneFor(aim, shift) {
   const { world, matLimb, matBall } = makeWorld();
   const start = M.pelvisPath(0);
   const rag = buildRagdoll(world, {
@@ -245,7 +245,7 @@ function buildScene(aim, shift) {
 const ZERO = { x: 0, z: 0 };
 
 export function scout(aim) {
-  const { world, rag } = buildScene(aim, ZERO);
+  const { world, rag } = buildSceneFor(aim, ZERO);
   const { bones, order } = rag;
 
   const states = [];   // states[i] is the world AFTER step i, i.e. at t=(i+1)*DT
@@ -254,7 +254,7 @@ export function scout(aim) {
   const N = Math.round(2.4 / DT);
   for (let i = 0; i < N; i++) {
     const t = i * DT;
-    actuate(bones, t, aim, ZERO);
+    actuateAt(bones, t, aim, ZERO);
     world.step(DT);
     states.push(snapshot(bones, order));
 
@@ -325,11 +325,11 @@ export function probeImpact(scoutData, cand, aim) {
   const back = Math.round(0.06 / DT);
   const rewind = Math.max(0, best.i - back);
 
-  const { world, rag, matBall } = buildScene(aim, ZERO);
+  const { world, rag, matBall } = buildSceneFor(aim, ZERO);
   restore(rag.bones, order, states[rewind]);
 
   const place = ballPlacementFor(best, cand);
-  const ball = makeBall(world, matBall, place.pos);
+  const ball = makeBallIn(world, matBall, place.pos);
 
   let contact = null;
   let launch = null;
@@ -338,7 +338,7 @@ export function probeImpact(scoutData, cand, aim) {
   const N = Math.round(0.28 / DT);
   for (let i = 0; i < N; i++) {
     const t = (rewind + 1) * DT + i * DT;
-    actuate(rag.bones, t, aim, ZERO);
+    actuateAt(rag.bones, t, aim, ZERO);
     applyAerodynamics(ball, DIM.ballR);
     if (contact === null) vBefore = ball.velocity.clone();
     world.step(DT);

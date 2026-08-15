@@ -1,0 +1,328 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ragdoll free kick</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0a0f14; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script type="importmap">
+{ "imports": { "three": "/node_modules/three/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// 2.39:1. The action is a wide, shallow band -- the striker, the wall and the
+// goal all sit near the ground -- so a scope frame spends its pixels on the
+// shot instead of on empty sky and foreground grass.
+const W = 1920, H = 806;
+
+const data = await (await fetch('/out/kick.json')).json();
+const S = data.scene;
+const BONES = data.bones;
+const NB = data.boneCount;
+
+/* ------------------------------------------------------------ renderer */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8fb6d6);
+scene.fog = new THREE.Fog(0x8fb6d6, 40, 110);
+
+/* Fixed camera, side on to the shooting line: the striker stays in profile
+   and the whole flight to the goal stays in frame. */
+const camera = new THREE.PerspectiveCamera(31.6, W / H, 0.1, 300);
+/* Framed to hold three things at once: where the run-up starts (about 4.5 m
+   back at 37 degrees), the ball, and the far post. */
+camera.position.set(3.0, 4.0, -17.0);
+camera.lookAt(6.67, 1.30, 0.62);
+
+/* ------------------------------------------------------------ lighting */
+scene.add(new THREE.HemisphereLight(0xbfd9f2, 0x3d5c33, 0.85));
+const sun = new THREE.DirectionalLight(0xfff3e0, 2.0);
+sun.position.set(-14, 22, -12);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+const sc = sun.shadow.camera;
+sc.left = -22; sc.right = 22; sc.top = 22; sc.bottom = -22; sc.near = 1; sc.far = 70;
+scene.add(sun);
+
+/* ------------------------------------------------------------ pitch */
+function turfTexture() {
+  const c = document.createElement('canvas');
+  c.width = 16; c.height = 512;
+  const g = c.getContext('2d');
+  for (let i = 0; i < 16; i++) {
+    g.fillStyle = i % 2 ? '#3f7a35' : '#478a3b';
+    g.fillRect(0, i * 32, 16, 32);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(1, 11);
+  return t;
+}
+const pitch = new THREE.Mesh(
+  new THREE.PlaneGeometry(160, 120),
+  new THREE.MeshLambertMaterial({ map: turfTexture() })
+);
+pitch.rotation.x = -Math.PI / 2;
+pitch.position.set(20, 0, 0);
+pitch.receiveShadow = true;
+scene.add(pitch);
+
+/* pitch markings */
+const paint = new THREE.LineBasicMaterial({ color: 0xf2f6f2, transparent: true, opacity: 0.75 });
+function line(pts) {
+  const g = new THREE.BufferGeometry().setFromPoints(
+    pts.map(p => new THREE.Vector3(p[0], 0.012, p[1]))
+  );
+  scene.add(new THREE.Line(g, paint));
+}
+const GX = S.goalX;
+line([[GX, -34], [GX, 34]]);                              // goal line
+line([[GX - 16.5, -20.16], [GX, -20.16]]);                // penalty area
+line([[GX - 16.5, 20.16], [GX, 20.16]]);
+line([[GX - 16.5, -20.16], [GX - 16.5, 20.16]]);
+line([[GX - 5.5, -9.16], [GX, -9.16]]);                   // six-yard box
+line([[GX - 5.5, 9.16], [GX, 9.16]]);
+line([[GX - 5.5, -9.16], [GX - 5.5, 9.16]]);
+
+/* ------------------------------------------------------------ goal */
+const goal = new THREE.Group();
+const frameMat = new THREE.MeshLambertMaterial({ color: 0xf6f8f6 });
+const HW = S.goalHalfWidth, GH = S.goalHeight;
+function post(x, y, z, h, axis) {
+  const geo = new THREE.CylinderGeometry(0.06, 0.06, h, 12);
+  const m = new THREE.Mesh(geo, frameMat);
+  if (axis === 'z') m.rotation.x = Math.PI / 2;
+  m.position.set(x, y, z);
+  m.castShadow = true;
+  goal.add(m);
+}
+post(GX, GH / 2, HW, GH);
+post(GX, GH / 2, -HW, GH);
+post(GX, GH, 0, HW * 2, 'z');
+
+/* net: a light grid hanging off the frame */
+const netMat = new THREE.LineBasicMaterial({ color: 0xdfe8ef, transparent: true, opacity: 0.42 });
+const netPts = [];
+const DEPTH = 1.6;
+for (let i = 0; i <= 24; i++) {
+  const z = -HW + (2 * HW * i) / 24;
+  netPts.push(new THREE.Vector3(GX, GH, z), new THREE.Vector3(GX + DEPTH, GH - 0.55, z));
+  netPts.push(new THREE.Vector3(GX + DEPTH, GH - 0.55, z), new THREE.Vector3(GX + DEPTH, 0, z));
+}
+for (let i = 0; i <= 8; i++) {
+  const y = (GH * i) / 8;
+  netPts.push(new THREE.Vector3(GX + DEPTH, y, -HW), new THREE.Vector3(GX + DEPTH, y, HW));
+}
+for (let i = 0; i <= 6; i++) {
+  const d = (DEPTH * i) / 6;
+  const y = GH - (0.55 * i) / 6;
+  netPts.push(new THREE.Vector3(GX + d, y, -HW), new THREE.Vector3(GX + d, y, HW));
+}
+goal.add(new THREE.LineSegments(
+  new THREE.BufferGeometry().setFromPoints(netPts), netMat
+));
+scene.add(goal);
+
+/* ------------------------------------------------------------ the wall */
+const wallMat = new THREE.MeshLambertMaterial({ color: 0x2c3742 });
+const wallSkin = new THREE.MeshLambertMaterial({ color: 0xc9a789 });
+const WALL_Z = data.wallZ ?? 0;
+for (let i = 0; i < 4; i++) {
+  const z = WALL_Z - 0.78 + i * 0.52;
+  const tall = 1 + [0.03, -0.02, 0.04, -0.01][i]; // not four identical clones
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.17, 0.62, 4, 10), wallMat);
+  body.position.y = 1.16 * tall; body.castShadow = true; g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.115, 14, 10), wallSkin);
+  head.position.y = 1.68 * tall; head.castShadow = true; g.add(head);
+  for (const s of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.66, 4, 8), wallMat);
+    leg.position.set(0, 0.42, s * 0.10); leg.castShadow = true; g.add(leg);
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.055, 0.48, 4, 8), wallMat);
+    arm.position.set(0, 1.20, s * 0.24); arm.castShadow = true; g.add(arm);
+  }
+  g.position.set(S.wallX, 0, z);
+  scene.add(g);
+}
+
+/* ------------------------------------------------------------ ragdoll */
+const skinMat = new THREE.MeshLambertMaterial({ color: 0xe8e2d6 });
+const kitMat = new THREE.MeshLambertMaterial({ color: 0xd8483f });
+const shortMat = new THREE.MeshLambertMaterial({ color: 0x22262b });
+const bootMat = new THREE.MeshLambertMaterial({ color: 0x101317 });
+const jointMat = new THREE.MeshLambertMaterial({ color: 0x9aa3ac });
+
+function materialFor(name) {
+  if (name === 'torso') return kitMat;
+  if (name === 'pelvis') return shortMat;
+  if (name.startsWith('thigh')) return shortMat;
+  if (name.startsWith('foot')) return bootMat;
+  if (name.startsWith('upperArm')) return kitMat;
+  return skinMat;
+}
+
+const boneMeshes = BONES.map((name) => {
+  const spec = data.bodySpecs[name];
+  const g = new THREE.Group();
+  let mesh;
+  if (spec.shape === 'sphere') {
+    mesh = new THREE.Mesh(new THREE.SphereGeometry(spec.radius, 18, 14), skinMat);
+  } else {
+    const cyl = Math.max(0.001, spec.len - 2 * spec.radius);
+    mesh = new THREE.Mesh(
+      new THREE.CapsuleGeometry(spec.radius, cyl, 6, 14),
+      materialFor(name)
+    );
+    if (spec.shape === 'capsuleX') mesh.rotation.z = Math.PI / 2;
+    if (spec.offset) mesh.position.set(...spec.offset);
+  }
+  mesh.castShadow = true;
+  g.add(mesh);
+
+  // Toribash-ish joint beads at the ends of each limb segment
+  if (spec.shape === 'capsuleY' && spec.len > 0.25) {
+    for (const s of [-1, 1]) {
+      const b = new THREE.Mesh(
+        new THREE.SphereGeometry(spec.radius * 1.14, 14, 10), jointMat
+      );
+      b.position.y = (s * spec.len) / 2;
+      b.castShadow = true;
+      g.add(b);
+    }
+  }
+  scene.add(g);
+  return g;
+});
+
+/* ------------------------------------------------------------ ball */
+function ballTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f7f7f4'; g.fillRect(0, 0, 256, 256);
+  g.fillStyle = '#15181c';
+  // a few patches, enough to read the spin
+  const patch = (cx, cy, r) => {
+    g.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      i ? g.lineTo(x, y) : g.moveTo(x, y);
+    }
+    g.closePath(); g.fill();
+  };
+  patch(64, 64, 26); patch(192, 64, 26);
+  patch(128, 150, 26); patch(28, 190, 22); patch(224, 190, 22);
+  return new THREE.CanvasTexture(c);
+}
+const ball = new THREE.Mesh(
+  new THREE.SphereGeometry(data.ballRadius, 28, 20),
+  new THREE.MeshLambertMaterial({ map: ballTexture() })
+);
+ball.castShadow = true;
+scene.add(ball);
+
+/* trail: makes the curve legible on a fixed camera */
+const TRAIL = 90;
+const trailPos = new Float32Array(TRAIL * 3);
+const trailGeo = new THREE.BufferGeometry();
+trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
+const trail = new THREE.Line(
+  trailGeo,
+  new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })
+);
+trail.frustumCulled = false;
+scene.add(trail);
+const trailHistory = [];
+
+const TRACE = 260;
+const tracePos = new Float32Array(TRACE * 3);
+const traceGeo = new THREE.BufferGeometry();
+traceGeo.setAttribute('position', new THREE.BufferAttribute(tracePos, 3));
+const trace = new THREE.Line(
+  traceGeo,
+  new THREE.LineBasicMaterial({ color: 0xffe86b, transparent: true, opacity: 0.8 })
+);
+trace.frustumCulled = false;
+scene.add(trace);
+const traceHistory = [];
+
+/* ------------------------------------------------------------ playback */
+const _q = new THREE.Quaternion();
+
+function sampleAt(tSim) {
+  const f = tSim * data.fps;
+  const i0 = Math.max(0, Math.min(data.frames.length - 1, Math.floor(f)));
+  const i1 = Math.min(data.frames.length - 1, i0 + 1);
+  const u = f - i0;
+  return [data.frames[i0], data.frames[i1], u];
+}
+
+window.setSimTime = function (tSim, videoFrame) {
+  const [A, B, u] = sampleAt(tSim);
+
+  for (let b = 0; b < NB; b++) {
+    const o = b * 7;
+    const g = boneMeshes[b];
+    g.position.set(
+      A[o] + (B[o] - A[o]) * u,
+      A[o + 1] + (B[o + 1] - A[o + 1]) * u,
+      A[o + 2] + (B[o + 2] - A[o + 2]) * u
+    );
+    const qa = new THREE.Quaternion(A[o + 3], A[o + 4], A[o + 5], A[o + 6]);
+    const qb = new THREE.Quaternion(B[o + 3], B[o + 4], B[o + 5], B[o + 6]);
+    g.quaternion.copy(qa.slerp(qb, u));
+  }
+
+  const o = NB * 7;
+  ball.position.set(
+    A[o] + (B[o] - A[o]) * u,
+    A[o + 1] + (B[o + 1] - A[o + 1]) * u,
+    A[o + 2] + (B[o + 2] - A[o + 2]) * u
+  );
+  const ba = new THREE.Quaternion(A[o + 3], A[o + 4], A[o + 5], A[o + 6]);
+  const bb = new THREE.Quaternion(B[o + 3], B[o + 4], B[o + 5], B[o + 6]);
+  ball.quaternion.copy(ba.slerp(bb, u));
+
+  // trail only once the ball is actually flying
+  if (tSim > data.contactTime + 0.01) {
+    trailHistory.push(ball.position.clone());
+    if (trailHistory.length > TRAIL) trailHistory.shift();
+  }
+  for (let i = 0; i < TRAIL; i++) {
+    const p = trailHistory[Math.min(i, trailHistory.length - 1)] || ball.position;
+    trailPos[i * 3] = p.x; trailPos[i * 3 + 1] = p.y; trailPos[i * 3 + 2] = p.z;
+  }
+  trailGeo.attributes.position.needsUpdate = true;
+  trail.visible = trailHistory.length > 2;
+
+  if (tSim > data.contactTime + 0.01) {
+    traceHistory.push(new THREE.Vector3(ball.position.x, 0.03, ball.position.z));
+  }
+  for (let i = 0; i < TRACE; i++) {
+    const p = traceHistory[Math.min(i, traceHistory.length - 1)] ||
+      new THREE.Vector3(0, 0.03, 0);
+    tracePos[i * 3] = p.x; tracePos[i * 3 + 1] = p.y; tracePos[i * 3 + 2] = p.z;
+  }
+  traceGeo.attributes.position.needsUpdate = true;
+  trace.visible = traceHistory.length > 2;
+
+  renderer.render(scene, camera);
+};
+
+window.__ready = true;
+</script>
+</body>
+</html>

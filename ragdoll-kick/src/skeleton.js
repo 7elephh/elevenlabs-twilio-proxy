@@ -176,6 +176,34 @@ export function buildRagdoll(world, { origin = V(0, 0, 0), yaw = 0, material, dt
   return { bones, joints, order };
 }
 
+/**
+ * Visual description of each bone, for the renderer. Kept here so the drawing
+ * can never drift from the physics: these are the same numbers the collision
+ * shapes are built from.
+ */
+export function bodySpecs() {
+  const D = DIM;
+  const cap = (len, radius) => ({ shape: 'capsuleY', len, radius });
+  const specs = {
+    pelvis: cap(0.16, RAD.pelvis),
+    torso: cap(D.torsoLen, RAD.torso),
+    head: { shape: 'sphere', radius: D.headR },
+  };
+  for (const side of ['L', 'R']) {
+    specs['upperArm' + side] = cap(D.upperArm, RAD.upperArm);
+    specs['foreArm' + side] = cap(D.foreArm, RAD.foreArm);
+    specs['thigh' + side] = cap(D.thigh, RAD.thigh);
+    specs['shin' + side] = cap(D.shin, RAD.shin);
+    specs['foot' + side] = {
+      shape: 'capsuleX',
+      len: D.footLen * 0.84,
+      radius: D.footR,
+      offset: [0, -D.footDrop, 0],
+    };
+  }
+  return specs;
+}
+
 /** Anchor pairs used by the length audit -- the joints that must never stretch. */
 export function segmentSpecs() {
   const D = DIM;
