@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
 import { submitTestResultAction } from "@/actions/test-actions";
+import { notifyQueueChanged } from "@/components/offline-sync";
+import { enqueue, isNetworkError, isOffline } from "@/lib/offline/queue";
 import { ReliabilityBadge, TrendBadge } from "@/components/badges";
 import { Card, Notice } from "@/components/ui";
 import {
@@ -34,6 +36,7 @@ type Summary = {
   isImprovement: boolean;
   reliability: ReliabilityLevel;
   observations: number;
+  queuedOffline: boolean;
 };
 
 const STEP_LABELS = ["Protocol", "Attempts", "Result"] as const;
@@ -112,21 +115,49 @@ export function TestRunner({
     setError(null);
     const scored = scoreResult(protocol, rawInput);
 
-    startTransition(async () => {
-      const response = await submitTestResultAction({
-        protocolSlug: protocol.slug,
-        performedAt,
-        attempts: rawInput.attempts,
-        extras: rawInput.extras,
-        measurementMethod: method,
-        reliabilityLevel: reliability,
-        conditions: conditions || null,
-        notes: null,
-      });
+    const payload = {
+      protocolSlug: protocol.slug,
+      performedAt,
+      attempts: rawInput.attempts,
+      extras: rawInput.extras,
+      measurementMethod: method,
+      reliabilityLevel: reliability,
+      conditions: conditions || null,
+      notes: null,
+    };
 
-      if (!response.ok) {
-        setError(response.message);
-        return;
+    startTransition(async () => {
+      let resultId = "queued";
+      let queuedOffline = false;
+
+      if (isOffline()) {
+        if (!enqueue({ kind: "test", payload })) {
+          setError("No connection, and this device cannot store the result.");
+          return;
+        }
+        notifyQueueChanged();
+        queuedOffline = true;
+      } else {
+        try {
+          const response = await submitTestResultAction(payload);
+          if (!response.ok) {
+            setError(response.message);
+            return;
+          }
+          resultId = response.resultId ?? "new";
+        } catch (error) {
+          // Connection dropped mid-submit: queue rather than lose the test.
+          if (!isNetworkError(error)) {
+            setError((error as Error).message);
+            return;
+          }
+          if (!enqueue({ kind: "test", payload })) {
+            setError("No connection, and this device cannot store the result.");
+            return;
+          }
+          notifyQueueChanged();
+          queuedOffline = true;
+        }
       }
 
       const sameVariant = history
@@ -137,7 +168,7 @@ export function TestRunner({
         value: scored.value,
         reliability,
         protocolVersion: protocol.protocolVersion,
-        resultId: response.resultId ?? "new",
+        resultId,
       };
       const points = [...sameVariant, newPoint].sort((a, b) =>
         a.date.localeCompare(b.date),
@@ -161,16 +192,19 @@ export function TestRunner({
         isImprovement: change?.isImprovement ?? false,
         reliability,
         observations: points.length,
+        queuedOffline,
       });
       setStep(2);
-      router.refresh();
+      if (!queuedOffline) router.refresh();
     });
   }
 
   if (summary) {
     return (
       <Card>
-        <p className="text-xs uppercase tracking-[0.16em] text-chalk-600">Result saved</p>
+        <p className="text-xs uppercase tracking-[0.16em] text-chalk-600">
+          {summary.queuedOffline ? "Saved on this device" : "Result saved"}
+        </p>
         <h3 className="mt-1 text-lg font-semibold text-chalk-100">{protocol.name}</h3>
 
         <dl className="mt-4 space-y-3">
@@ -203,6 +237,15 @@ export function TestRunner({
             {summary.observations} measurement{summary.observations > 1 ? "s" : ""}
           </span>
         </div>
+
+        {summary.queuedOffline ? (
+          <div className="mt-3">
+            <Notice tone="warn">
+              No connection: this result is stored on your phone and will be sent
+              automatically once you are back online.
+            </Notice>
+          </div>
+        ) : null}
 
         {summary.observations < 3 ? (
           <div className="mt-3">

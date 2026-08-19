@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { BottomNav, TopNav } from "@/components/nav";
+import { OfflineSync } from "@/components/offline-sync";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,6 +14,13 @@ export const metadata: Metadata = {
     capable: true,
     title: "PROJECT ZERO",
     statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -42,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
         </div>
         <BottomNav />
+        <OfflineSync />
       </body>
     </html>
   );

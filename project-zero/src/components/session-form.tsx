@@ -6,6 +6,8 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { createSessionAction } from "@/actions/session-actions";
+import { notifyQueueChanged } from "@/components/offline-sync";
+import { enqueue, isNetworkError, isOffline } from "@/lib/offline/queue";
 import { sessionSchema } from "@/lib/validation/schemas";
 import { POSITIONS, SESSION_TYPES } from "@/lib/domain/types";
 import type { Position, SessionType } from "@/lib/domain/types";
@@ -30,6 +32,7 @@ export function SessionForm({ defaultPosition }: { defaultPosition: Position | n
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [queuedMessage, setQueuedMessage] = useState<string | null>(null);
 
   const {
     control,
@@ -55,18 +58,58 @@ export function SessionForm({ defaultPosition }: { defaultPosition: Position | n
 
   const onSubmit = handleSubmit((values) => {
     setError(null);
+    setQueuedMessage(null);
+    const payload = {
+      date: values.date,
+      sessionType: values.sessionType,
+      durationMinutes: Number(values.durationMinutes),
+      position: values.position ?? null,
+      rpe: values.rpe ?? null,
+      notes: values.notes ?? null,
+    };
+
+    // Stay on the form rather than navigating: the sessions list may not be in
+    // the offline cache, and being thrown to a generic offline page after a
+    // successful save reads like a failure.
+    const queueLocally = () => {
+      const queued = enqueue({ kind: "session", payload });
+      if (!queued) {
+        setError("No connection, and this device cannot store the entry.");
+        return false;
+      }
+      notifyQueueChanged();
+      setQueuedMessage("Saved on this device — it will sync when you are back online.");
+      setValue("notes", null);
+      return true;
+    };
+
+    if (isOffline()) {
+      queueLocally();
+      return;
+    }
+
     const formData = new FormData();
-    formData.set("date", values.date);
-    formData.set("sessionType", values.sessionType);
-    formData.set("durationMinutes", String(values.durationMinutes));
-    if (values.position) formData.set("position", values.position);
-    if (values.rpe) formData.set("rpe", String(values.rpe));
-    if (values.notes) formData.set("notes", values.notes);
+    formData.set("date", payload.date);
+    formData.set("sessionType", payload.sessionType);
+    formData.set("durationMinutes", String(payload.durationMinutes));
+    if (payload.position) formData.set("position", payload.position);
+    if (payload.rpe) formData.set("rpe", String(payload.rpe));
+    if (payload.notes) formData.set("notes", payload.notes);
 
     startTransition(async () => {
-      const result = await createSessionAction(null, formData);
-      if (!result.ok) {
-        setError(result.message);
+      try {
+        const result = await createSessionAction(null, formData);
+        if (!result.ok) {
+          setError(result.message);
+          return;
+        }
+      } catch (error) {
+        // Connection dropped mid-submit: keep the entry instead of losing it.
+        if (isNetworkError(error)) {
+          queueLocally();
+          return;
+        }
+        setError((error as Error).message);
         return;
       }
       router.push("/sessions");
@@ -216,6 +259,11 @@ export function SessionForm({ defaultPosition }: { defaultPosition: Position | n
       </details>
 
       {error ? <p className="text-sm text-alert">{error}</p> : null}
+      {queuedMessage ? (
+        <p className="rounded-xl border border-caution/40 bg-caution/10 px-3 py-2 text-sm text-caution">
+          {queuedMessage}
+        </p>
+      ) : null}
 
       <button type="submit" className="pz-button" disabled={pending}>
         {pending ? "Saving…" : "Save session"}

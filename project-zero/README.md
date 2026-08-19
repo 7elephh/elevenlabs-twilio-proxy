@@ -122,8 +122,13 @@ Constraints worth knowing:
   (`ATTACKING_FULLBACK` and `COMPLETE_FULLBACK` fully weighted in V0.1; the other three
   are declared but neutral). Weights order the UI — they never produce a rating.
 - **Demo data** — seeded rows are flagged and removable in one click from the profile.
-- **Mobile first / PWA-ready** — bottom tab bar, 48 px touch targets, 16 px inputs (no
-  iOS zoom), safe-area padding, web manifest and Apple web-app meta.
+- **Mobile first, installable** — bottom tab bar, 48 px touch targets, 16 px inputs (no
+  iOS zoom), safe-area padding. Web manifest, app icons and Apple web-app meta, so
+  Safari's "Add to Home Screen" gives a standalone app.
+- **Works without a connection** — a service worker keeps every page you have already
+  opened available offline, and sessions or test results recorded without signal are
+  stored on the device and replayed automatically on reconnection. A drain is guarded
+  against concurrent runs, so one entry is never submitted twice.
 
 Deliberately **not** built: social feed, followers, badges, leaderboards, levels, overall
 rating, LLM features.
@@ -208,7 +213,7 @@ Run on Node 22, from `project-zero/`:
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Unit tests | `npm run test` | **66 passed** (4 files) |
+| Unit tests | `npm run test` | **79 passed** (5 files) |
 | TypeScript | `npm run typecheck` | **no errors** (strict) |
 | Lint | `npm run lint` | **no warnings or errors** |
 | Build | `npm run build` | **success**, 13 routes |
@@ -229,8 +234,29 @@ Test coverage focuses on what must not be wrong:
 - position/role weighting, and priority ordering (stagnating before improving at equal
   weight)
 - checkpoint windows, baseline vs previous-checkpoint deltas, next-due dates
+- the offline queue: ordering, removal, corrupt storage, size cap, and telling a network
+  failure apart from a server rejection
+
+The offline path was additionally verified in a real browser with the server stopped:
+the service worker takes control, a previously visited page still renders, an unvisited
+one falls back to the static offline page, a session recorded with the server down is
+queued on the device, and firing three `online` events at once drains it exactly once.
 
 ---
+
+## Offline behaviour, and its limits
+
+The service worker caches pages network-first: you always get fresh data when the network
+allows, and the last rendered version when it does not. Two consequences worth knowing:
+
+- a page you have **never opened online** cannot be shown offline — you get the static
+  offline page instead;
+- a page served from the cache shows the data as of your last visit, so figures can be
+  stale until the connection returns.
+
+Writes are never cached by the service worker. They go to a `localStorage` queue and are
+replayed sequentially on reconnection; an entry the server rejects on its merits is
+dropped and reported rather than blocking everything behind it.
 
 ## Next steps (V0.2)
 
