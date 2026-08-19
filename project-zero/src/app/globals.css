@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #08090b;
+  color: #f2f5f7;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  /* Room for the fixed mobile tab bar. */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Numeric inputs stay large enough that iOS does not zoom on focus. */
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+@layer components {
+  .pz-card {
+    @apply rounded-2xl border border-ink-700 bg-ink-850 p-4;
+  }
+
+  .pz-label {
+    @apply block text-xs font-medium uppercase tracking-[0.12em] text-chalk-500;
+  }
+
+  .pz-input {
+    @apply w-full rounded-xl border border-ink-700 bg-ink-900 px-4 py-3 text-chalk-100
+      outline-none transition focus:border-signal/60 focus:ring-2 focus:ring-signal/20;
+  }
+
+  .pz-button {
+    @apply inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl
+      bg-signal px-5 py-3 font-semibold text-ink-950 transition active:scale-[0.99]
+      disabled:opacity-50;
+  }
+
+  .pz-button-ghost {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border
+      border-ink-700 bg-ink-800 px-4 py-3 font-medium text-chalk-100 transition
+      active:scale-[0.99] disabled:opacity-50;
+  }
+
+  .pz-stat {
+    @apply font-mono text-2xl font-semibold tabular-nums text-chalk-100;
+  }
+}
