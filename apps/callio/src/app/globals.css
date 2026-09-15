@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* Pile systeme par defaut. Pour brancher une fonte de marque, il suffit
+       de redefinir cette seule variable — rien d'autre n'y fait reference. */
+    --font-sans:
+      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-night-950 font-sans text-mist-100 antialiased;
+    /* Halo violet discret, fixe : donne de la profondeur sans gener la lecture. */
+    background-image:
+      radial-gradient(60rem 40rem at 50% -10rem, rgba(115, 56, 232, 0.16), transparent 70%);
+    background-attachment: fixed;
+  }
+
+  /* 16px minimum sur les champs : en deca, iOS zoome au focus. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-callio-500 ring-offset-2 ring-offset-night-950;
+  }
+}
+
+@layer components {
+  .cal-card {
+    @apply rounded-card border border-night-700 bg-night-850/80 shadow-card backdrop-blur-sm;
+  }
+
+  .cal-button {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-control
+           bg-callio-600 px-4 text-sm font-semibold text-white
+           transition-colors hover:bg-callio-500
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .cal-button-ghost {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-control
+           border border-night-600 bg-night-800 px-4 text-sm font-medium text-mist-300
+           transition-colors hover:border-night-600 hover:text-mist-100
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .cal-input {
+    @apply w-full rounded-control border border-night-600 bg-night-900 px-3 py-2.5
+           text-mist-100 placeholder:text-mist-600
+           focus:border-callio-500 focus:outline-none;
+  }
+
+  .cal-label {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-mist-500;
+  }
+
+  /* Libelle de section, repris a l'identique sur tous les ecrans. */
+  .cal-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-mist-500;
+  }
+}
