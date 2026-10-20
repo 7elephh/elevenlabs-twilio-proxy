@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111214">
+<meta name="robots" content="noindex">
+<title>Le King Barber — Démo</title>
+<link rel="icon" href="data:image/png;base64,__MONO__">
+<link rel="apple-touch-icon" href="data:image/png;base64,__MONO__">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --noir:#111214;--noir-soft:#18191c;--ivoire:#F2EDE4;--champagne:#B8AD99;--champagne-dark:#8f846f;--graphite:#52504C;
+  --line:rgba(242,237,228,.1);--muted:rgba(242,237,228,.6);--faint:rgba(242,237,228,.4);
+  --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --sans:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--noir);color:var(--ivoire);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+img{display:block;max-width:100%}
+h1,h2,h3{font-family:var(--serif);font-weight:400;text-wrap:balance}
+:focus-visible{outline:1px solid var(--champagne);outline-offset:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+@media(min-width:768px){.wrap{padding:0 40px}}
+.label{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--champagne)}
+.sec-label{display:flex;align-items:center;gap:16px}
+.sec-label .n{color:var(--faint)} .sec-label .r{height:1px;width:48px;background:rgba(184,173,153,.6)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:16px 28px;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;transition:all .5s var(--ease)}
+.btn-solid{background:var(--ivoire);color:var(--noir)} .btn-solid:hover{background:var(--champagne)}
+.btn-outline{border:1px solid rgba(242,237,228,.3)} .btn-outline:hover{border-color:var(--champagne);color:var(--champagne)}
+.btn-ghost{padding:8px 0;color:rgba(242,237,228,.8)} .btn-ghost:hover{color:var(--champagne)}
+.btn-dark{background:var(--noir);color:var(--ivoire)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.arrow{width:24px;height:8px}
+.demo-bar{position:fixed;left:0;right:0;bottom:0;z-index:80;display:flex;gap:8px;justify-content:center;align-items:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(17,18,20,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.demo-bar b{color:var(--champagne);font-weight:600;letter-spacing:.2em;text-transform:uppercase;font-size:10px}
+.demo-bar a{border:1px solid var(--line);padding:6px 10px;letter-spacing:.12em;text-transform:uppercase;font-size:10px;color:var(--ivoire)}
+.demo-bar a.on{background:var(--ivoire);color:var(--noir)}
+/* Header */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:env(safe-area-inset-top);transition:all .7s var(--ease);border-bottom:1px solid transparent}
+.hdr.solid{background:rgba(17,18,20,.86);backdrop-filter:blur(10px);border-color:var(--line)}
+.hdr .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.hdr .mono{width:36px}
+.nav{display:none;align-items:center;gap:40px}
+.nav a{font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:rgba(242,237,228,.75)}
+.nav a:hover{color:var(--ivoire)}
+.burger{display:flex;flex-direction:column;gap:7px;padding:12px;margin-right:-12px}
+.burger span{display:block;width:24px;height:1px;background:var(--ivoire);transition:transform .5s}
+.burger.open span:first-child{transform:translateY(4px) rotate(45deg)} .burger.open span:last-child{transform:translateY(-4px) rotate(-45deg)}
+.mmenu{position:fixed;inset:0;z-index:45;background:var(--noir);padding:112px 24px 90px;display:flex;flex-direction:column;justify-content:space-between;opacity:0;pointer-events:none;transition:opacity .5s}
+.mmenu.open{opacity:1;pointer-events:auto}
+.mmenu nav{display:flex;flex-direction:column;gap:24px}
+.mmenu nav a{font-family:var(--serif);font-size:38px}
+@media(min-width:768px){.hdr .wrap{height:80px}.hdr .mono{width:40px}.nav{display:flex}.burger{display:none}}
+/* Hero */
+.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden;background:radial-gradient(ellipse at 70% 35%,#26262a 0%,#111214 62%)}
+.hero .wm{position:absolute;right:-18%;top:8%;width:95%;max-width:900px;opacity:.06;pointer-events:none}
+.hero .inner{position:relative;width:100%;padding-top:128px;padding-bottom:96px}
+.hero h1{margin-top:24px;font-size:clamp(3.1rem,11vw,7.5rem);font-weight:300;line-height:.95;max-width:900px}
+.hero p.sub{margin-top:28px;max-width:440px;color:rgba(242,237,228,.7);font-size:17px;line-height:1.7}
+.hero .ctas{margin-top:40px;display:flex;flex-direction:column;gap:16px}
+@media(min-width:640px){.hero .ctas{flex-direction:row;align-items:center}}
+@media(min-width:768px){.hero .wm{right:-6%;top:6%;width:62%}}
+.rise{animation:rise .9s var(--ease) both}.d1{animation-delay:.12s}.d2{animation-delay:.24s}.d3{animation-delay:.36s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.vis{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.rise{animation:none}html{scroll-behavior:auto}}
+/* Sections */
+section.s{padding:96px 0}
+@media(min-width:768px){section.s{padding:144px 0}}
+.grid12{display:grid;gap:40px}
+@media(min-width:768px){.grid12{grid-template-columns:5fr 1fr 6fr}.grid12>.l{grid-column:1}.grid12>.r{grid-column:3}}
+.h2{margin-top:32px;font-size:clamp(2.4rem,6vw,4rem);line-height:1.02}
+.lead{font-size:19px;line-height:1.8;color:rgba(242,237,228,.75)}
+.steps{display:grid;gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:64px}
+.steps>div{background:var(--noir-soft);padding:40px 0}
+.steps .k{font-family:var(--serif);font-style:italic;color:var(--champagne)}
+.steps h3{font-size:30px;margin-top:16px}
+.steps p{margin-top:12px;max-width:300px;color:var(--muted)}
+@media(min-width:768px){.steps{grid-template-columns:repeat(3,1fr)}.steps>div{padding:40px}.steps>div:first-child{padding-left:0}}
+.ivory{background:var(--ivoire);color:var(--noir)}
+.svc{display:flex;gap:24px;align-items:flex-start;padding:32px 0;border-bottom:1px solid rgba(17,18,20,.15)}
+.svc h3{font-size:30px;line-height:1.15;transition:transform .7s var(--ease)}
+.svc:hover h3{transform:translateX(4px)}
+.svc p.d{margin-top:12px;color:var(--graphite);max-width:440px}
+.svc .meta{margin-top:16px;display:inline-flex;gap:12px;align-items:center;font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:rgba(17,18,20,.6)}
+.svc .price{font-family:var(--serif);font-size:32px;white-space:nowrap}
+.hours td,.hours th{padding:16px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
+.hours td{text-align:right;font-variant-numeric:tabular-nums}
+.hours tr.today{color:var(--ivoire)} .hours tr{color:rgba(242,237,228,.65)}
+.final{text-align:center;padding:112px 0 160px}
+.final img{width:220px;margin:0 auto}
+footer{border-top:1px solid var(--line);padding:56px 0 120px}
+footer .row{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-end}
+footer nav{display:flex;flex-wrap:wrap;gap:12px 28px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(242,237,228,.55)}
+/* Booking */
+.bk{display:grid;grid-template-columns:minmax(0,1fr);gap:40px;padding-top:112px;padding-bottom:220px}
+@media(min-width:900px){.bk{grid-template-columns:minmax(0,8fr) 4fr;padding-top:144px;padding-bottom:120px}}
+.stepper{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase}
+.stepper i{font-family:var(--serif);font-size:14px;letter-spacing:0;text-transform:none}
+.stepper .ln{width:28px;height:1px;background:rgba(242,237,228,.2)}
+.stepper .cur{color:var(--ivoire)} .stepper .done{color:var(--champagne)} .stepper .todo{color:rgba(242,237,228,.3)}
+.stepper .t{display:none} @media(min-width:640px){.stepper .t{display:inline}}
+.bk h1{margin-top:40px;font-size:clamp(2.4rem,7vw,3.75rem);line-height:1}
+.opt{display:flex;width:100%;align-items:center;gap:20px;padding:28px 0;border-bottom:1px solid var(--line);text-align:left;transition:background .3s}
+.opt:hover{background:rgba(242,237,228,.02)}
+.opt .n{display:block;font-family:var(--serif);font-size:28px;line-height:1.15}
+.opt .d{display:block;margin-top:8px;font-size:14px;color:rgba(242,237,228,.55);max-width:440px}
+.opt .m{display:block;margin-top:12px;font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--champagne)}
+.opt .p{font-family:var(--serif);font-size:30px;white-space:nowrap}
+.days{display:flex;gap:8px;overflow-x:auto;margin:20px -20px 0;padding:0 20px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+@media(min-width:768px){.days{display:grid;grid-template-columns:repeat(7,1fr);margin:20px 0 0;padding:0}}
+.day{min-width:68px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 8px;border:1px solid rgba(242,237,228,.15);transition:all .3s}
+.day .w{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+.day .n{font-family:var(--serif);font-size:24px;line-height:1}
+.day .dot{width:4px;height:4px;border-radius:50%;background:var(--champagne)}
+.day:hover{border-color:var(--champagne)}
+.day.sel{background:var(--ivoire);color:var(--noir);border-color:var(--ivoire)} .day.sel .dot{background:var(--noir)}
+.day[disabled]{border-color:rgba(242,237,228,.05);color:rgba(242,237,228,.25)} .day[disabled] .dot{background:transparent}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+@media(min-width:640px){.slots{grid-template-columns:repeat(5,1fr)}}@media(min-width:900px){.slots{grid-template-columns:repeat(6,1fr)}}
+.slot{padding:14px 0;border:1px solid rgba(242,237,228,.15);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;transition:all .3s}
+.slot:hover{border-color:var(--champagne)} .slot.sel{background:var(--ivoire);color:var(--noir);border-color:var(--ivoire)}
+.navbtn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(242,237,228,.15)}
+.navbtn[disabled]{opacity:.25}
+.field{width:100%;border:1px solid rgba(242,237,228,.15);background:transparent;padding:14px 16px;font-size:16px;transition:border-color .3s;border-radius:0}
+.field:focus{border-color:var(--champagne);outline:none}
+.flabel{display:block;margin-bottom:8px;font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(242,237,228,.7)}
+.form{margin-top:40px;display:grid;gap:24px}
+@media(min-width:640px){.form{grid-template-columns:1fr 1fr}.form .full{grid-column:1/-1}}
+.err{margin-top:8px;font-size:13px;color:var(--champagne)}
+.notice{margin-top:32px;border-left:2px solid var(--champagne);background:rgba(242,237,228,.04);padding:16px 20px;font-size:14px}
+.summary{position:fixed;left:0;right:0;bottom:44px;z-index:40;background:rgba(17,18,20,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:16px 20px}
+.summary .top{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.summary .svcname{font-family:var(--serif);font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.summary .when{font-size:12px;color:var(--muted);margin-top:2px}
+.summary .btn{width:100%;margin-top:14px}
+.summary .lg{display:none}
+@media(min-width:900px){.summary{position:sticky;top:128px;bottom:auto;border:1px solid var(--line);background:var(--noir-soft);padding:32px;align-self:start}.summary .lg{display:block}.summary .top{display:block}.summary .sm{display:none}}
+.dl{border-top:1px solid var(--line);margin-top:48px}
+.dl div{display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding:20px 0;border-bottom:1px solid var(--line)}
+.dl dt{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(242,237,228,.45)}
+.dl dd{font-family:var(--serif);font-size:22px;text-align:right}
+.fl::first-letter{text-transform:uppercase}
+/* Admin */
+.adm{display:block;min-height:100svh;padding-bottom:150px}
+@media(min-width:900px){.adm{display:grid;grid-template-columns:240px 1fr;padding-bottom:50px}}
+.side{display:none;position:sticky;top:0;height:100svh;border-right:1px solid var(--line);padding:20px;flex-direction:column;justify-content:space-between}
+@media(min-width:900px){.side{display:flex}.atop{display:none!important}}
+.side a.it{display:flex;align-items:center;gap:12px;padding:10px 12px;font-size:14px;color:rgba(242,237,228,.55)}
+.side a.it.on{background:rgba(242,237,228,.07);color:var(--ivoire)}
+.side a.it:hover{color:var(--ivoire)}
+.ic{width:20px;height:20px;flex:none}
+.atop{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:12px 20px;padding-top:max(12px,env(safe-area-inset-top))}
+.amain{min-width:0;padding:32px 20px}
+@media(min-width:900px){.amain{padding:48px 40px}}
+.tabs{position:fixed;left:0;right:0;bottom:44px;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(17,18,20,.96);border-top:1px solid var(--line)}
+.tabs a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0;font-size:10px;color:rgba(242,237,228,.55)}
+.tabs a.on{color:var(--champagne)}
+@media(min-width:900px){.tabs{display:none}}
+.ph{display:flex;flex-direction:column;gap:16px;margin-bottom:32px}
+@media(min-width:768px){.ph{flex-direction:row;align-items:flex-end;justify-content:space-between}}
+.ph h1{font-size:44px;line-height:1.05}
+.ph .sub{margin-top:6px;font-size:14px;color:rgba(242,237,228,.55)}
+.card{border:1px solid var(--line);background:var(--noir-soft);padding:20px}
+@media(min-width:768px){.card{padding:24px}}
+.card h2{font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--champagne);margin-bottom:20px;display:flex;justify-content:space-between}
+.card h2 a{color:rgba(242,237,228,.5);letter-spacing:0;text-transform:none;font-weight:400;font-size:12px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:1000px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpis div{background:var(--noir);padding:20px}
+.kpis p:first-child{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(242,237,228,.45)}
+.kpis p:last-child{margin-top:12px;font-family:var(--serif);font-size:36px}
+.g2{display:grid;gap:24px;margin-top:24px}
+@media(min-width:1000px){.g2{grid-template-columns:1fr 1fr}}
+.bl a{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.bl a:last-child{border-bottom:0}
+.bl .t{width:64px;text-align:center;flex:none}
+.bl .t small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(242,237,228,.45)}
+.bl .t b{font-family:var(--serif);font-weight:400;font-size:24px}
+.bl .who{min-width:0;flex:1}
+.bl .who p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bl .who p+p{font-size:12px;color:rgba(242,237,228,.5)}
+.badge{display:inline-block;border:1px solid rgba(184,173,153,.5);color:var(--champagne);padding:2px 8px;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.badge.x{border-color:rgba(242,237,228,.15);color:rgba(242,237,228,.4)}
+.empty{padding:20px 0;font-size:14px;color:rgba(242,237,228,.45)}
+.seg{display:flex;border:1px solid rgba(242,237,228,.15)}
+.seg a,.seg button{padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.6)}
+.seg .on{background:var(--ivoire);color:var(--noir)}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.cal{border:1px solid var(--line);overflow-x:auto}
+.cal .in{min-width:100%}
+.cal.week .in{min-width:760px}
+.cal .head,.cal .body{display:grid}
+.cal .head>div{border-left:1px solid var(--line);padding:12px;text-align:center;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(242,237,228,.7);border-bottom:1px solid var(--line)}
+.cal .head>div b{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:0;margin-left:4px}
+.cal .head>div.today{color:var(--champagne)}
+.cal .col{position:relative;border-left:1px solid var(--line);background:repeating-linear-gradient(135deg,rgba(242,237,228,.035) 0 2px,transparent 2px 9px)}
+.cal .open{position:absolute;left:0;right:0;background:var(--noir)}
+.cal .hl{position:absolute;left:0;right:0;border-top:1px solid rgba(242,237,228,.06)}
+.cal .lab{position:absolute;right:8px;transform:translateY(-50%);font-size:10px;color:rgba(242,237,228,.35)}
+.cal .ev{position:absolute;left:4px;right:4px;z-index:2;overflow:hidden;border-left:2px solid var(--champagne);background:#25231f;padding:4px 8px;font-size:12px;line-height:1.25;text-align:left}
+.cal .ev:hover{background:#2f2c26}
+.cal .ev span{color:var(--champagne)} .cal .ev small{display:block;color:rgba(242,237,228,.55)}
+.cal .blk{position:absolute;left:0;right:0;z-index:1;background:repeating-linear-gradient(135deg,rgba(242,237,228,.07) 0 6px,transparent 6px 12px);font-size:11px;color:rgba(242,237,228,.5);padding:4px 8px}
+.ainput{width:100%;border:1px solid rgba(242,237,228,.15);background:var(--noir);padding:10px 12px;font-size:15px;border-radius:0}
+.ainput:focus{border-color:var(--champagne);outline:none}
+.alabel{display:block;margin-bottom:6px;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.6)}
+.abtn{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;background:var(--ivoire);color:var(--noir)}
+.abtn:hover{background:var(--champagne)}
+.abtn.o{background:transparent;color:var(--ivoire);border:1px solid rgba(242,237,228,.25)}
+.abtn.r{background:transparent;color:#f5b5ad;border:1px solid rgba(248,113,113,.4)}
+.dayrow{display:flex;flex-direction:column;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+@media(min-width:640px){.dayrow{flex-direction:row;align-items:flex-start}}
+.dayrow .dn{width:110px;padding-top:9px;font-size:14px}
+.range{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.range input{border:1px solid rgba(242,237,228,.15);background:var(--noir);padding:8px;font-size:14px;color-scheme:dark}
+.toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:99;background:var(--ivoire);color:var(--noir);padding:12px 20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.on{opacity:1}
+.hint{font-size:12px;color:rgba(242,237,228,.45)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast" role="status"></div>
+<nav class="demo-bar" aria-label="Mode démonstration">
+  <b>Démo</b>
+  <a href="#/" data-k="site">Site client</a>
+  <a href="#/admin" data-k="admin">Espace salon</a>
+  <a href="#" id="reset">Réinitialiser</a>
+</nav>
+<script>
+"use strict";
+const MONO="data:image/png;base64,__MONO__";
+const LOGO="data:image/png;base64,__LOGO__";
+const ARROW='<svg class="arrow" viewBox="0 0 24 8" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 4h23M19 .5 23 4l-4 3.5"/></svg>';
+const ARROWL='<svg class="arrow" style="transform:rotate(180deg)" viewBox="0 0 24 8" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 4h23M19 .5 23 4l-4 3.5"/></svg>';
+const DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const DAYS_S=["lun","mar","mer","jeu","ven","sam","dim"];
+const MONTHS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- Dates (heure locale de l'appareil) ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return ymd(d)};
+const isoDay=s=>((parse(s).getDay()+6)%7)+1;
+const at=(s,hm)=>{const d=parse(s);const [h,m]=hm.split(":").map(Number);d.setHours(h,m,0,0);return d};
+const hm=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const hLabel=t=>t.replace(":","h");
+const longDate=s=>{const d=parse(s);return `${DAYS[isoDay(s)-1].toLowerCase()} ${d.getDate()} ${MONTHS[d.getMonth()]}`};
+const price=c=>new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",minimumFractionDigits:c%100?2:0}).format(c/100);
+const dur=m=>m<60?`${m} min`:`${Math.floor(m/60)} h${m%60?" "+pad(m%60):""}`;
+const hourShort=t=>{const [h,m]=t.split(":");return m==="00"?`${+h}h`:`${+h}h${m}`};
+
+/* ---------- Données de démonstration (stockées dans ce navigateur) ---------- */
+const KEY="lkb-demo-v1";
+function seed(){
+  const today=ymd(new Date());
+  const hours=[];for(let d=2;d<=6;d++){hours.push({weekday:d,opens:"09:30",closes:"12:30"},{weekday:d,opens:"14:00",closes:"19:00"})}
+  const services=[
+    {id:"s1",name:"Coupe + barbe",description:"Coupe sur mesure et taille de barbe précise, finitions soignées.",price:2000,duration:45,active:true},
+    {id:"s2",name:"Coupe",description:"Coupe aux ciseaux ou à la tondeuse, adaptée à votre style.",price:1500,duration:30,active:true},
+    {id:"s3",name:"Taille de barbe",description:"Mise en forme, contours nets et soin.",price:1000,duration:20,active:true},
+  ];
+  const st={services,hours,blocks:[],bookings:[],settings:{slot:15,notice:60,advance:60}};
+  // Quelques rendez-vous d'exemple pour remplir l'agenda
+  const ex=[["Yanis","B.","s1","10:00"],["Mehdi","K.","s2","11:00"],["Lucas","M.","s3","15:00"],["Adam","R.","s1","17:15"],["Sami","T.","s2","10:30"]];
+  let d=today,placed=0,guard=0;
+  while(placed<ex.length&&guard<20){d=addDays(d,1);guard++;if(!hours.some(h=>h.weekday===isoDay(d)))continue;
+    const [f,l,s,t]=ex[placed];const sv=services.find(x=>x.id===s);const start=at(d,t);
+    st.bookings.push({id:"b"+placed,first:f,last:l,phone:"06 00 00 00 0"+placed,email:"",service:sv.name,serviceId:s,price:sv.price,duration:sv.duration,start:start.toISOString(),end:new Date(+start+sv.duration*6e4).toISOString(),status:"confirmed",source:placed%2?"admin":"online",created:new Date().toISOString()});
+    placed++; if(placed===2||placed===4) d=addDays(d,0);
+  }
+  return st;
+}
+let S;
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch{S=null}if(!S||!S.services)S=seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch{}}
+load();
+
+/* ---------- Moteur de disponibilités (même logique que le site réel) ---------- */
+function availability(serviceId,from,to,excludeId){
+  const sv=S.services.find(s=>s.id===serviceId);if(!sv)return[];
+  const now=Date.now(),earliest=now+S.settings.notice*6e4,durMs=sv.duration*6e4,step=S.settings.slot*6e4;
+  const first=ymd(new Date()),last=addDays(first,S.settings.advance);
+  const busy=S.bookings.filter(b=>b.status!=="cancelled"&&b.id!==excludeId).map(b=>[+new Date(b.start),+new Date(b.end)]);
+  const blocks=S.blocks.map(b=>[+new Date(b.start),+new Date(b.end)]);
+  const out=[];
+  for(let d=from<first?first:from;d<=to&&d<=last;d=addDays(d,1)){
+    const ranges=S.hours.filter(h=>h.weekday===isoDay(d)).sort((a,b)=>a.opens.localeCompare(b.opens));
+    const slots=[];
+    for(const r of ranges){const o=+at(d,r.opens),c=+at(d,r.closes);
+      for(let t=o;t+durMs<=c;t+=step){const e=t+durMs;if(t<earliest)continue;
+        if(busy.some(([a,b])=>t<b&&a<e))continue;if(blocks.some(([a,b])=>t<b&&a<e))continue;
+        slots.push({start:new Date(t).toISOString(),label:hm(new Date(t))})}}
+    out.push({date:d,open:ranges.length>0,slots});
+  }
+  return out;
+}
+const slotFree=(sid,iso,ex)=>{const d=ymd(new Date(iso));return (availability(sid,d,d,ex)[0]?.slots||[]).some(s=>s.start===iso)};
+
+/* ---------- Utilitaires d'interface ---------- */
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600)}
+function observe(){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vis");io.unobserve(e.target)}}),{rootMargin:"0px 0px -8% 0px"});document.querySelectorAll(".reveal").forEach(el=>io.observe(el))}
+function demoBar(k){document.querySelectorAll(".demo-bar a[data-k]").forEach(a=>a.classList.toggle("on",a.dataset.k===k))}
+
+/* ---------- Site public ---------- */
+function header(){return `
+<header class="hdr" id="hdr"><div class="wrap">
+  <a href="#/" aria-label="Accueil"><img class="mono" src="${MONO}" alt="Le King Barber"></a>
+  <nav class="nav" aria-label="Navigation principale">
+    <a href="#/" data-s="salon">Le salon</a><a href="#/" data-s="prestations">Prestations</a><a href="#/" data-s="infos">Infos pratiques</a>
+    <a href="#/reserver" class="btn btn-outline" style="padding:12px 20px">Réserver</a>
+  </nav>
+  <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span></button>
+</div></header>
+<div class="mmenu" id="mmenu"><nav>
+  <a href="#/" data-s="salon">Le salon</a><a href="#/" data-s="prestations">Prestations</a><a href="#/" data-s="infos">Infos pratiques</a></nav>
+  <a href="#/reserver" class="btn btn-solid">Prendre rendez-vous</a></div>`}
+function bindHeader(){
+  const h=$("#hdr"),b=$("#burger"),m=$("#mmenu");
+  const on=()=>h.classList.toggle("solid",scrollY>24||m.classList.contains("open"));on();window.onscroll=on;
+  b.onclick=()=>{const o=!m.classList.contains("open");m.classList.toggle("open",o);b.classList.toggle("open",o);b.setAttribute("aria-expanded",o);document.body.style.overflow=o?"hidden":"";on()};
+  document.querySelectorAll("[data-s]").forEach(a=>a.onclick=e=>{e.preventDefault();m.classList.remove("open");b.classList.remove("open");document.body.style.overflow="";
+    const go=()=>document.getElementById(a.dataset.s)?.scrollIntoView({behavior:"smooth"});if(location.hash!=="#/"&&location.hash!==""){location.hash="#/";setTimeout(go,60)}else go()});
+}
+function footer(){return `<footer><div class="wrap"><div class="row"><img src="${LOGO}" alt="Le King Barber" style="width:150px;opacity:.9">
+<nav><a href="#/reserver">Réserver</a><span>Mentions légales</span><span>Confidentialité</span></nav></div>
+<p style="margin-top:32px;font-size:11px;letter-spacing:.12em;color:rgba(242,237,228,.35)">© ${new Date().getFullYear()} Le King Barber — version de démonstration</p></div></footer>`}
+
+function home(){
+  const svc=S.services.filter(s=>s.active);
+  const today=isoDay(ymd(new Date()));
+  const rows=DAYS.map((d,i)=>{const r=S.hours.filter(h=>h.weekday===i+1).sort((a,b)=>a.opens.localeCompare(b.opens)).map(h=>`${hourShort(h.opens)} – ${hourShort(h.closes)}`);
+    return `<tr class="${i+1===today?"today":""}"><th scope="row">${d}${i+1===today?' <span class="label" style="margin-left:10px;font-size:9px">Aujourd\'hui</span>':""}</th><td>${r.length?r.join("  ·  "):'<span style="color:rgba(242,237,228,.35)">Fermé</span>'}</td></tr>`}).join("");
+  return header()+`
+<main>
+<section class="hero"><img class="wm" src="${MONO}" alt="" aria-hidden="true"><div class="wrap inner">
+  <p class="label rise">Barbier · Coiffure masculine</p>
+  <h1 class="rise d1">L'art de soigner son style.</h1>
+  <p class="sub rise d2">Coupe, barbe et soin dans un salon pensé pour l'homme moderne.</p>
+  <div class="ctas rise d3"><a class="btn btn-solid" href="#/reserver">Prendre rendez-vous ${ARROW}</a><a class="btn btn-ghost" href="#/" data-s="prestations" style="justify-content:flex-start">Voir les prestations</a></div>
+</div></section>
+
+<section class="s" id="salon" style="background:var(--noir-soft)"><div class="wrap">
+  <div class="grid12"><div class="l reveal"><p class="label sec-label"><span class="n">01</span><span class="r"></span>Le salon</p><h2 class="h2">Une maison de grooming</h2></div>
+  <div class="r reveal"><p class="lead">Chez Le King Barber, chaque rendez-vous est un moment pour soi. Un diagnostic attentif, des gestes précis et des finitions nettes : le style se construit avec méthode, sans précipitation.</p>
+  <p style="margin-top:24px;color:var(--muted);line-height:1.8">Accueil, conseil, coupe et finitions : une expérience calme et maîtrisée, du premier échange au dernier détail.</p></div></div>
+  <div class="steps">${[["Accueil","Un moment pour échanger sur vos habitudes, votre style et vos attentes."],["Diagnostic","Morphologie, nature du cheveu, implantation de la barbe : chaque détail compte."],["Précision","Des gestes maîtrisés, des contours nets et des finitions soignées."]].map((s,i)=>`<div class="reveal" style="transition-delay:${i*120}ms"><span class="k">0${i+1}</span><h3>${s[0]}</h3><p>${s[1]}</p></div>`).join("")}</div>
+</div></section>
+
+<section class="s ivory" id="prestations"><div class="wrap"><div class="grid12">
+  <div class="l reveal"><p class="label sec-label" style="color:var(--champagne-dark)"><span class="n" style="color:rgba(17,18,20,.4)">02</span><span class="r" style="background:rgba(143,132,111,.6)"></span>Prestations</p><h2 class="h2">La carte</h2>
+  <p style="margin-top:24px;max-width:360px;color:var(--graphite)">Tarifs et durées indicatifs. Choisissez votre prestation, puis le créneau qui vous convient.</p></div>
+  <div class="r"><div style="border-top:1px solid rgba(17,18,20,.15)">${svc.map((s,i)=>`<a class="svc reveal" style="transition-delay:${i*80}ms" href="#/reserver/${s.id}"><div style="flex:1"><h3>${esc(s.name)}</h3><p class="d">${esc(s.description)}</p><p class="meta">${dur(s.duration)}<span style="width:24px;height:1px;background:currentColor;opacity:.4"></span>Réserver ${ARROW}</p></div><p class="price">${price(s.price)}</p></a>`).join("")}</div></div>
+</div></div></section>
+
+<section class="s" id="infos" style="background:var(--noir-soft);border-top:1px solid var(--line)"><div class="wrap"><div class="grid12">
+  <div class="l reveal"><p class="label sec-label"><span class="n">03</span><span class="r"></span>Infos pratiques</p><h2 class="h2">Nous trouver</h2>
+  <dl style="margin-top:48px;display:grid;gap:40px"><div><dt class="label">Adresse</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8)">Adresse du salon</dd><a class="btn btn-ghost" style="margin-top:8px" href="#/" onclick="return false">Itinéraire ${ARROW}</a></div>
+  <div><dt class="label">Contact</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8)">Téléphone · Instagram</dd></div></dl></div>
+  <div class="r reveal"><p class="label">Horaires</p><table class="hours" style="width:100%;margin-top:24px;border-collapse:collapse"><tbody>${rows}</tbody></table></div>
+</div></div></section>
+
+<section class="final"><div class="wrap reveal"><img src="${LOGO}" alt="Le King Barber"><p style="margin:48px auto 0;max-width:420px;font-size:18px;color:rgba(242,237,228,.65)">Votre prochain rendez-vous se réserve en moins d'une minute.</p>
+<a class="btn btn-solid" style="margin-top:40px" href="#/reserver">Prendre rendez-vous ${ARROW}</a></div></section>
+</main>`+footer();
+}
+
+/* ---------- Réservation ---------- */
+const B={step:"service",service:null,win:null,date:null,slot:null,notice:null};
+function reserve(pre){
+  if(pre&&!B.service){B.service=pre;B.step="slot"}
+  B.win??=ymd(new Date());
+  const sv=S.services.find(s=>s.id===B.service);
+  const idx=["service","slot","details"].indexOf(B.step);
+  const steps=[["service","Prestation"],["slot","Créneau"],["details","Coordonnées"]].map(([k,t],i)=>`<button data-step="${k}" ${i>idx?"disabled":""} class="${i===idx?"cur":i<idx?"done":"todo"}"><i>0${i+1}</i> <span class="t">${t}</span></button>${i<2?'<span class="ln"></span>':""}`).join("");
+  let body="";
+  if(B.step==="service"){
+    body=`<h1>Choisissez votre prestation</h1><div style="margin-top:40px;border-top:1px solid var(--line)" role="radiogroup" aria-label="Prestations">${S.services.filter(s=>s.active).map(s=>`<button class="opt" role="radio" aria-checked="${B.service===s.id}" data-svc="${s.id}"><span style="flex:1"><span class="n">${esc(s.name)}</span><span class="d">${esc(s.description)}</span><span class="m">${dur(s.duration)}</span></span><span class="p">${price(s.price)}</span></button>`).join("")}</div>`;
+  } else if(B.step==="slot"){
+    const today=ymd(new Date()),last=addDays(today,S.settings.advance);
+    const days=availability(B.service,B.win,addDays(B.win,13));
+    if(!B.date||!days.some(d=>d.date===B.date&&d.slots.length)){B.date=days.find(d=>d.slots.length)?.date??null}
+    const day=days.find(d=>d.date===B.date);
+    const groups=day?[["Matin",s=>s.label<"12:00"],["Après-midi",s=>s.label>="12:00"&&s.label<"17:00"],["Fin de journée",s=>s.label>="17:00"]].map(([l,f])=>[l,day.slots.filter(f)]).filter(g=>g[1].length):[];
+    const m=parse(B.win);
+    body=`<h1>Choisissez votre créneau</h1>
+    <div style="margin-top:40px;display:flex;justify-content:space-between;align-items:center"><p class="label">${MONTHS[m.getMonth()]} ${m.getFullYear()}</p>
+    <div style="display:flex;gap:8px"><button class="navbtn" id="prev" aria-label="Dates précédentes" ${B.win<=today?"disabled":""}>${ARROWL}</button><button class="navbtn" id="next" aria-label="Dates suivantes" ${addDays(B.win,14)>last?"disabled":""}>${ARROW}</button></div></div>
+    <div class="days" role="listbox" aria-label="Jours">${days.map(d=>`<button class="day ${d.date===B.date?"sel":""}" role="option" aria-selected="${d.date===B.date}" data-date="${d.date}" ${d.slots.length?"":"disabled"}><span class="w">${DAYS_S[isoDay(d.date)-1]}</span><span class="n">${parse(d.date).getDate()}</span><span class="dot"></span></button>`).join("")}</div>
+    <div style="margin-top:40px;min-height:180px" aria-live="polite">${day?`<p class="fl" style="font-family:var(--serif);font-size:24px">${longDate(day.date)}</p>${groups.map(([l,sl])=>`<p class="label" style="margin-top:28px;color:rgba(242,237,228,.5)">${l}</p><div class="slots">${sl.map(s=>`<button class="slot ${B.slot===s.start?"sel":""}" aria-pressed="${B.slot===s.start}" data-slot="${s.start}">${hLabel(s.label)}</button>`).join("")}</div>`).join("")}`:'<p style="color:var(--muted)">Aucun créneau disponible sur ces dates.</p>'}</div>`;
+  } else {
+    body=`<h1>Vos coordonnées</h1><form class="form" id="bform" novalidate>
+      <div><label class="flabel" for="f1">Prénom</label><input class="field" id="f1" name="first" autocomplete="given-name" required></div>
+      <div><label class="flabel" for="f2">Nom</label><input class="field" id="f2" name="last" autocomplete="family-name" required></div>
+      <div><label class="flabel" for="f3">Téléphone</label><input class="field" id="f3" name="phone" type="tel" inputmode="tel" placeholder="06 12 34 56 78" required></div>
+      <div><label class="flabel" for="f4">Email (facultatif)</label><input class="field" id="f4" name="email" type="email" autocomplete="email"><p class="hint" style="margin-top:8px">Pour recevoir la confirmation et un rappel.</p></div>
+      <div class="full"><label class="flabel" for="f5">Précision pour le barbier (facultatif)</label><textarea class="field" id="f5" name="note" rows="3" maxlength="500" style="resize:none"></textarea></div>
+      <label class="full" style="display:flex;gap:16px;font-size:14px;color:rgba(242,237,228,.7);align-items:flex-start"><input type="checkbox" name="privacy" style="margin-top:4px;width:16px;height:16px;accent-color:#B8AD99"> <span>J'ai pris connaissance de la politique de confidentialité. Mes données servent uniquement à la gestion de mon rendez-vous.</span></label>
+      <p class="err full" id="ferr" role="alert"></p></form>`;
+  }
+  const when=B.slot?`<span class="fl" style="display:inline-block">${longDate(ymd(new Date(B.slot)))} · ${hLabel(hm(new Date(B.slot)))}</span>`:"—";
+  const action=B.step==="service"?`<button class="btn btn-solid" disabled>Choisissez une prestation</button>`:B.step==="slot"?`<button class="btn btn-solid" id="cont" ${B.slot?"":"disabled"}>Continuer ${ARROW}</button>`:`<button class="btn btn-solid" id="confirm">Confirmer le rendez-vous</button>`;
+  return header()+`<main class="wrap bk"><div style="min-width:0"><nav class="stepper" aria-label="Étapes">${steps}</nav>${B.notice?`<p class="notice" role="alert">${esc(B.notice)}</p>`:""}${body}</div>
+  <aside class="summary"><p class="label lg">Votre rendez-vous</p>
+   <div class="top"><div style="min-width:0"><p class="lg hint" style="margin-top:24px;letter-spacing:.18em;text-transform:uppercase;font-size:11px">Prestation</p><p class="svcname">${sv?esc(sv.name):"—"}</p><p class="when sm">${B.slot?when:""}</p></div>
+   <div class="lg" style="margin-top:20px"><p class="hint" style="letter-spacing:.18em;text-transform:uppercase;font-size:11px">Date</p><p style="margin-top:4px">${when}</p></div>
+   <div><p class="lg hint" style="margin-top:20px;letter-spacing:.18em;text-transform:uppercase;font-size:11px">Tarif</p><p style="white-space:nowrap">${sv?price(sv.price):"—"} <span class="hint">${sv?"· "+dur(sv.duration):""}</span></p></div></div>
+   ${action}</aside></main>`;
+}
+function bindReserve(){
+  document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>{B.step=b.dataset.step;B.notice=null;render()});
+  document.querySelectorAll("[data-svc]").forEach(b=>b.onclick=()=>{B.service=b.dataset.svc;B.step="slot";B.slot=null;B.date=null;B.win=ymd(new Date());B.notice=null;render(true)});
+  document.querySelectorAll("[data-date]").forEach(b=>b.onclick=()=>{B.date=b.dataset.date;B.slot=null;render()});
+  document.querySelectorAll("[data-slot]").forEach(b=>b.onclick=()=>{B.slot=b.dataset.slot;render()});
+  $("#prev")&&($("#prev").onclick=()=>{const t=ymd(new Date());B.win=addDays(B.win,-14)<t?t:addDays(B.win,-14);B.date=null;B.slot=null;render()});
+  $("#next")&&($("#next").onclick=()=>{B.win=addDays(B.win,14);B.date=null;B.slot=null;render()});
+  $("#cont")&&($("#cont").onclick=()=>{B.step="details";render(true)});
+  $("#confirm")&&($("#confirm").onclick=()=>{
+    const f=new FormData($("#bform"));const first=String(f.get("first")).trim(),last=String(f.get("last")).trim(),phone=String(f.get("phone")).replace(/[\s.\-]/g,""),email=String(f.get("email")).trim();
+    const err=!first||!last?"Merci d'indiquer votre prénom et votre nom.":!/^(0[1-9]\d{8}|\+\d{8,15})$/.test(phone)?"Numéro de téléphone invalide.":email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)?"Adresse email invalide.":!f.get("privacy")?"Merci de prendre connaissance de la politique de confidentialité.":"";
+    if(err){$("#ferr").textContent=err;return}
+    // Revérification au moment de confirmer (comme le serveur du site réel)
+    if(!slotFree(B.service,B.slot)){B.notice="Ce créneau vient d'être réservé. Merci d'en choisir un autre.";B.slot=null;B.step="slot";render(true);return}
+    const sv=S.services.find(s=>s.id===B.service);const id="b"+Date.now().toString(36);
+    S.bookings.push({id,first,last,phone:String(f.get("phone")).trim(),email,note:String(f.get("note")||"").trim(),service:sv.name,serviceId:sv.id,price:sv.price,duration:sv.duration,start:B.slot,end:new Date(+new Date(B.slot)+sv.duration*6e4).toISOString(),status:"confirmed",source:"online",created:new Date().toISOString()});
+    save();Object.assign(B,{step:"service",service:null,date:null,slot:null,notice:null,win:null});location.hash=`#/rdv/${id}/nouveau`;
+  });
+}
+
+function confirmation(id,isNew){
+  const b=S.bookings.find(x=>x.id===id);if(!b)return header()+`<main class="wrap" style="padding:160px 20px">Rendez-vous introuvable.</main>`;
+  const st=new Date(b.start),cancelled=b.status==="cancelled";
+  return header()+`<main class="wrap" style="max-width:760px;padding-top:128px;padding-bottom:140px">
+  <p class="label rise">${cancelled?"Rendez-vous annulé":isNew?"Réservation confirmée":"Mon rendez-vous"}</p>
+  <h1 class="rise d1" style="margin-top:24px;font-size:clamp(2.6rem,8vw,4.5rem);line-height:.98">${cancelled?"Ce rendez-vous a été annulé.":isNew?`Merci ${esc(b.first)}, à très vite.`:"Votre rendez-vous"}</h1>
+  ${isNew&&!cancelled?`<p class="rise d2" style="margin-top:24px;max-width:480px;color:rgba(242,237,228,.7);line-height:1.7">Votre créneau est réservé. Sur le site réel, ${b.email?"un email de confirmation est envoyé et ":""}un lien personnel permet de retrouver ou d'annuler le rendez-vous.</p>`:""}
+  <dl class="dl rise d3"><div><dt>Prestation</dt><dd>${esc(b.service)}</dd></div><div><dt>Date</dt><dd class="fl">${longDate(ymd(st))}</dd></div><div><dt>Heure</dt><dd>${hLabel(hm(st))}</dd></div><div><dt>Durée</dt><dd>${dur(b.duration)}</dd></div><div><dt>Tarif</dt><dd>${price(b.price)}</dd></div></dl>
+  ${cancelled?`<a class="btn btn-solid" style="margin-top:40px" href="#/reserver">Reprendre rendez-vous ${ARROW}</a>`:`<div style="margin-top:40px;display:flex;flex-wrap:wrap;gap:16px"><a class="btn btn-solid" href="#/" id="ics">Ajouter à mon agenda</a><a class="btn btn-outline" href="#/admin/agenda/jour/${ymd(st)}">Voir côté salon ${ARROW}</a></div>
+  <div style="margin-top:56px" id="cz"><button class="btn btn-ghost" id="cancel">Annuler ce rendez-vous</button></div>`}
+  </main>`+footer();
+}
+function bindConfirmation(id){
+  const b=S.bookings.find(x=>x.id===id);if(!b)return;
+  $("#ics")&&($("#ics").onclick=e=>{e.preventDefault();const f=d=>new Date(d).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+    const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Le King Barber//Demo//FR","BEGIN:VEVENT",`UID:${b.id}@demo`,`DTSTAMP:${f(new Date())}`,`DTSTART:${f(b.start)}`,`DTEND:${f(b.end)}`,`SUMMARY:${b.service} — Le King Barber`,"END:VEVENT","END:VCALENDAR"].join("\r\n");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));a.download="rendez-vous-le-king-barber.ics";a.click()});
+  $("#cancel")&&($("#cancel").onclick=()=>{$("#cz").innerHTML=`<div style="border:1px solid rgba(242,237,228,.15);padding:24px"><p>Confirmez-vous l'annulation ? Le créneau sera libéré pour un autre client.</p><div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px"><button class="btn btn-solid" id="yes">Oui, annuler</button><button class="btn btn-outline" id="no">Garder mon rendez-vous</button></div></div>`;
+    $("#yes").onclick=()=>{b.status="cancelled";b.cancelledBy="client";save();render()};$("#no").onclick=()=>render()});
+}
+
+/* ---------- Espace salon ---------- */
+const ICONS={dash:"M3 12l9-8 9 8M5 10v10h14V10",agenda:"M4 6h16v14H4zM4 10h16M9 3v4M15 3v4",rdv:"M5 5h14M5 12h14M5 19h9",hours:"M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z",svc:"M6 3l12 18M18 3L6 21M4 8h4M16 16h4"};
+const icon=k=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS[k]}"/></svg>`;
+const ANAV=[["dash","#/admin","Tableau de bord","Accueil"],["agenda","#/admin/agenda","Agenda","Agenda"],["rdv","#/admin/nouveau","Nouveau rendez-vous","+ RDV"],["hours","#/admin/horaires","Horaires & congés","Horaires"],["svc","#/admin/prestations","Prestations","Tarifs"]];
+function adminShell(active,content){
+  return `<div class="adm"><aside class="side"><div><a href="#/admin" style="display:flex;align-items:center;gap:12px;padding:0 12px;margin-bottom:40px"><img src="${MONO}" alt="" style="width:30px"><span class="label" style="color:rgba(242,237,228,.7);letter-spacing:.2em">Espace salon</span></a>
+  <nav aria-label="Administration">${ANAV.map(([k,h,l])=>`<a class="it ${k===active?"on":""}" href="${h}">${icon(k)}${l}</a>`).join("")}</nav></div>
+  <div style="padding:0 12px;font-size:12px;color:rgba(242,237,228,.4)"><p>Démo — pas de mot de passe</p><a href="#/" style="display:inline-block;margin-top:8px">Voir le site</a></div></aside>
+  <header class="atop"><a href="#/admin" style="display:flex;align-items:center;gap:12px"><img src="${MONO}" alt="" style="width:28px"><span class="label" style="color:rgba(242,237,228,.7);letter-spacing:.2em">Espace salon</span></a><a href="#/" class="hint">Voir le site</a></header>
+  <main class="amain">${content}</main>
+  <nav class="tabs" aria-label="Administration">${ANAV.map(([k,h,,s])=>`<a class="${k===active?"on":""}" href="${h}">${icon(k)}${s}</a>`).join("")}</nav></div>`;
+}
+const live=()=>S.bookings.filter(b=>b.status!=="cancelled");
+function blist(list,showDate){if(!list.length)return '<p class="empty">Aucun rendez-vous.</p>';
+  return `<div class="bl">${list.map(b=>{const s=new Date(b.start);return `<a href="#/admin/rdv/${b.id}"><div class="t">${showDate?`<small>${DAYS_S[isoDay(ymd(s))-1]} ${s.getDate()} ${MONTHS[s.getMonth()].slice(0,4)}.</small>`:""}<b>${hLabel(hm(s))}</b></div><div class="who"><p ${b.status==="cancelled"?'style="text-decoration:line-through;color:rgba(242,237,228,.4)"':""}>${esc(b.first)} ${esc(b.last)}</p><p>${esc(b.service)} · ${b.duration} min · ${esc(b.phone)}</p></div>${b.status==="cancelled"?'<span class="badge x">Annulé</span>':b.source==="online"?'<span class="badge">En ligne</span>':""}</a>`}).join("")}</div>`}
+function dashboard(){
+  const today=ymd(new Date()),now=Date.now();
+  const todays=S.bookings.filter(b=>ymd(new Date(b.start))===today).sort((a,b)=>a.start.localeCompare(b.start));
+  const upcoming=live().filter(b=>+new Date(b.start)>now&&ymd(new Date(b.start))!==today).sort((a,b)=>a.start.localeCompare(b.start)).slice(0,8);
+  const month=today.slice(0,7),mlist=live().filter(b=>b.start.slice(0,7)===month||ymd(new Date(b.start)).slice(0,7)===month);
+  const online=S.bookings.filter(b=>b.source==="online"&&b.status!=="cancelled").length;
+  const d=new Date();
+  return adminShell("dash",`<div class="ph"><div><h1>Bonjour</h1><p class="sub fl">${longDate(today)} ${d.getFullYear()}</p></div><a class="abtn" href="#/admin/nouveau">+ Rendez-vous</a></div>
+  <div class="kpis"><div><p>Aujourd'hui</p><p>${todays.filter(b=>b.status!=="cancelled").length}</p></div><div><p>Réservations du mois</p><p>${mlist.length}</p></div><div><p>Chiffre prévu du mois</p><p>${price(mlist.reduce((s,b)=>s+b.price,0))}</p></div><div><p>Réservées en ligne</p><p>${online}</p></div></div>
+  <div class="g2"><section class="card"><h2>Rendez-vous du jour <a href="#/admin/agenda">Agenda →</a></h2>${blist(todays)}</section>
+  <section class="card"><h2>À venir</h2>${blist(upcoming,true)}</section></div>`);
+}
+function agenda(view,date){
+  const today=ymd(new Date());date=date||today;view=view||(innerWidth<900?"jour":"semaine");
+  let days;if(view==="jour")days=[date];else{const m=addDays(date,-(isoDay(date)-1));days=Array.from({length:7},(_,i)=>addDays(m,i))}
+  const step=view==="jour"?1:7,prev=addDays(date,-step),next=addDays(date,step);
+  const toMin=t=>{const [h,m]=t.split(":").map(Number);return h*60+m};
+  const rel=S.hours.filter(h=>days.some(d=>isoDay(d)===h.weekday));
+  let a=rel.length?Math.min(...rel.map(h=>toMin(h.opens))):540,z=rel.length?Math.max(...rel.map(h=>toMin(h.closes))):1140;
+  a=Math.floor(a/60)*60;z=Math.ceil(z/60)*60;const H=64,top=m=>(m-a)/60*H,height=(z-a)/60*H;
+  const hrs=Array.from({length:(z-a)/60},(_,i)=>a/60+i);
+  const mOf=d=>d.getHours()*60+d.getMinutes();
+  const m=parse(date);
+  const title=view==="jour"?`<span class="fl" style="display:inline-block">${longDate(date)} ${m.getFullYear()}</span>`:`Semaine du ${parse(days[0]).getDate()} ${MONTHS[parse(days[0]).getMonth()]}`;
+  const cols=days.map(d=>{const open=S.hours.filter(h=>h.weekday===isoDay(d));
+    const ev=S.bookings.filter(b=>b.status!=="cancelled"&&ymd(new Date(b.start))===d).map(b=>{const s=new Date(b.start),e=new Date(b.end);return `<a class="ev" href="#/admin/rdv/${b.id}" style="top:${top(mOf(s))+1}px;height:${Math.max(18,top(mOf(e))-top(mOf(s))-2)}px"><span>${hm(s)}</span> ${esc(b.first)} ${esc(b.last)}<small>${esc(b.service)}</small></a>`}).join("");
+    const ds=+at(d,"00:00"),de=+at(addDays(d,1),"00:00");
+    const bl=S.blocks.filter(b=>+new Date(b.start)<de&&+new Date(b.end)>ds).map(b=>{const s=Math.max(+new Date(b.start),ds),e=Math.min(+new Date(b.end),de);const t1=s===ds?0:mOf(new Date(s)),t2=e===de?1440:mOf(new Date(e));return `<div class="blk" style="top:${Math.max(0,top(t1))}px;height:${Math.max(18,top(Math.min(t2,z))-Math.max(0,top(t1)))}px">${b.kind==="vacation"?"Congés":"Bloqué"}${b.reason?" · "+esc(b.reason):""}</div>`}).join("");
+    return `<div class="col" style="height:${height}px">${open.map(h=>`<div class="open" style="top:${top(toMin(h.opens))}px;height:${top(toMin(h.closes))-top(toMin(h.opens))}px"></div>`).join("")}${hrs.map(h=>`<div class="hl" style="top:${top(h*60)}px"></div>`).join("")}${bl}${ev}</div>`}).join("");
+  const tpl=`56px repeat(${days.length},1fr)`;
+  return adminShell("agenda",`<div class="ph"><div><h1>Agenda</h1><p class="sub">${title}</p></div><div class="tools">
+   <div class="seg"><a class="${view==="jour"?"on":""}" href="#/admin/agenda/jour/${date}">Jour</a><a class="${view==="semaine"?"on":""}" href="#/admin/agenda/semaine/${date}">Semaine</a></div>
+   <div class="seg"><a href="#/admin/agenda/${view}/${prev}" aria-label="Précédent">←</a><a href="#/admin/agenda/${view}/${today}">Aujourd'hui</a><a href="#/admin/agenda/${view}/${next}" aria-label="Suivant">→</a></div>
+   <a class="abtn" href="#/admin/nouveau/${date}">+ Rendez-vous</a></div></div>
+  <div class="cal ${view==="semaine"?"week":""}"><div class="in"><div class="head" style="grid-template-columns:${tpl}"><div style="border-left:0"></div>${days.map(d=>`<div class="${d===today?"today":""}"><a href="#/admin/agenda/jour/${d}">${DAYS_S[isoDay(d)-1]}.<b>${parse(d).getDate()}</b></a></div>`).join("")}</div>
+  <div class="body" style="grid-template-columns:${tpl}"><div style="position:relative;height:${height}px">${hrs.map(h=>`<span class="lab" style="top:${top(h*60)}px">${h}h</span>`).join("")}</div>${cols}</div></div></div>
+  <p class="hint" style="margin-top:12px">Zones hachurées : salon fermé ou pause. Touchez un rendez-vous pour le gérer.</p>`);
+}
+function rdvDetail(id){
+  const b=S.bookings.find(x=>x.id===id);if(!b)return adminShell("agenda","<p>Rendez-vous introuvable.</p>");
+  const s=new Date(b.start);
+  return adminShell("agenda",`<div class="ph"><div><h1>${esc(b.first)} ${esc(b.last)}</h1><p class="sub fl">${longDate(ymd(s))} à ${hLabel(hm(s))}</p></div><span class="badge ${b.status==="cancelled"?"x":""}">${b.status==="cancelled"?"Annulé":"Confirmé"}</span></div>
+  <div class="g2"><section class="card"><h2>${b.status==="cancelled"?"Annulé":"Déplacer"}</h2>${b.status==="cancelled"?`<p class="hint">Annulé par ${b.cancelledBy==="client"?"le client":"le salon"}.</p>`:`
+   <div style="display:grid;gap:16px;grid-template-columns:1fr 1fr"><label><span class="alabel">Date</span><input class="ainput" type="date" id="md" value="${ymd(s)}" style="color-scheme:dark"></label><label><span class="alabel">Heure</span><input class="ainput" type="time" step="300" id="mt" value="${hm(s)}" style="color-scheme:dark"></label></div>
+   <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px"><button class="abtn" id="move">Enregistrer</button><button class="abtn r" id="cx">Annuler le rendez-vous</button></div><p class="err" id="merr"></p>`}</section>
+  <section class="card"><h2>Détails</h2><dl style="display:grid;gap:12px;font-size:14px">${[["Prestation",b.service],["Durée",dur(b.duration)],["Tarif",price(b.price)],["Téléphone",b.phone],["Email",b.email||"—"],["Origine",b.source==="online"?"Réservé en ligne":"Ajouté par le salon"],["Note du client",b.note||"—"]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;gap:16px"><dt class="hint" style="font-size:14px">${k}</dt><dd style="text-align:right">${esc(v)}</dd></div>`).join("")}</dl></section></div>`);
+}
+function bindDetail(id){
+  const b=S.bookings.find(x=>x.id===id);if(!b)return;
+  $("#cx")&&($("#cx").onclick=()=>{if(!confirm("Annuler ce rendez-vous ? Le créneau redevient disponible en ligne."))return;b.status="cancelled";b.cancelledBy="salon";save();toast("Rendez-vous annulé — créneau libéré");render()});
+  $("#move")&&($("#move").onclick=()=>{const ns=at($("#md").value,$("#mt").value);if(isNaN(ns)){return}const ne=new Date(+ns+b.duration*6e4);
+    const clash=live().some(x=>x.id!==b.id&&+new Date(x.start)<+ne&&+ns<+new Date(x.end));
+    if(clash){$("#merr").textContent="Ce créneau chevauche un autre rendez-vous.";return}
+    b.start=ns.toISOString();b.end=ne.toISOString();save();toast("Rendez-vous déplacé");location.hash=`#/admin/agenda/jour/${ymd(ns)}`});
+}
+function newBooking(date){
+  date=date||ymd(new Date());
+  return adminShell("rdv",`<div class="ph"><div><h1>Nouveau rendez-vous</h1><p class="sub">Ajout manuel (appel téléphonique, passage au salon…)</p></div></div>
+  <section class="card" style="max-width:720px"><div style="display:grid;gap:16px;grid-template-columns:1fr 1fr">
+   <label style="grid-column:1/-1"><span class="alabel">Prestation</span><select class="ainput" id="ns">${S.services.map(s=>`<option value="${s.id}">${esc(s.name)} — ${price(s.price)} · ${dur(s.duration)}</option>`).join("")}</select></label>
+   <label><span class="alabel">Date</span><input class="ainput" type="date" id="nd" value="${date}" style="color-scheme:dark"></label>
+   <label><span class="alabel">Heure</span><select class="ainput" id="nt"></select></label>
+   <label><span class="alabel">Prénom</span><input class="ainput" id="nf"></label><label><span class="alabel">Nom</span><input class="ainput" id="nl"></label>
+   <label style="grid-column:1/-1"><span class="alabel">Téléphone</span><input class="ainput" id="np" type="tel"></label></div>
+   <button class="abtn" id="nsave" style="margin-top:20px">Enregistrer</button><p class="err" id="nerr"></p></section>`);
+}
+function bindNew(){
+  const fill=()=>{const d=$("#nd").value,day=availability($("#ns").value,d,d)[0];const sl=day?.slots||[];
+    $("#nt").innerHTML=sl.length?sl.map(s=>`<option value="${s.start}">${hLabel(s.label)}</option>`).join(""):'<option value="">Aucun créneau libre</option>'};
+  fill();$("#ns").onchange=fill;$("#nd").onchange=fill;
+  $("#nsave").onclick=()=>{const sid=$("#ns").value,st=$("#nt").value,f=$("#nf").value.trim(),l=$("#nl").value.trim(),p=$("#np").value.trim();
+    if(!st||!f||!l||!p){$("#nerr").textContent="Choisissez un créneau et renseignez prénom, nom et téléphone.";return}
+    if(!slotFree(sid,st)){$("#nerr").textContent="Ce créneau n'est plus libre.";fill();return}
+    const sv=S.services.find(s=>s.id===sid);S.bookings.push({id:"b"+Date.now().toString(36),first:f,last:l,phone:p,email:"",service:sv.name,serviceId:sid,price:sv.price,duration:sv.duration,start:st,end:new Date(+new Date(st)+sv.duration*6e4).toISOString(),status:"confirmed",source:"admin",created:new Date().toISOString()});
+    save();toast("Rendez-vous ajouté");location.hash=`#/admin/agenda/jour/${ymd(new Date(st))}`};
+}
+function hoursPage(){
+  const blocks=S.blocks.filter(b=>+new Date(b.end)>Date.now()).sort((a,b)=>a.start.localeCompare(b.start));
+  return adminShell("hours",`<div class="ph"><div><h1>Horaires & congés</h1><p class="sub">Les créneaux proposés en ligne se mettent à jour immédiatement.</p></div></div>
+  <div class="g2"><section class="card"><h2>Horaires hebdomadaires</h2><p class="hint">Deux plages dans une journée = une pause (ex. 9h30–12h30 puis 14h–19h).</p>
+  ${DAYS.map((d,i)=>{const r=S.hours.filter(h=>h.weekday===i+1).sort((a,b)=>a.opens.localeCompare(b.opens));return `<div class="dayrow" data-wd="${i+1}"><p class="dn">${d}</p><div style="flex:1">${r.length?r.map((h,j)=>`<div class="range"><input type="time" step="300" value="${h.opens}" data-k="o" aria-label="${d} ouverture"> – <input type="time" step="300" value="${h.closes}" data-k="c" aria-label="${d} fermeture"><button class="hint" data-del="${j}" aria-label="Supprimer">×</button></div>`).join(""):'<p class="hint" style="padding-top:9px">Fermé</p>'}<button class="hint" style="color:var(--champagne)" data-add>+ ${r.length?"Ajouter une plage":"Ouvrir ce jour"}</button></div><button class="abtn o" data-save>Enregistrer</button></div>`}).join("")}</section>
+  <div style="display:grid;gap:24px;align-content:start"><section class="card"><h2>Ajouter des congés ou un blocage</h2>
+   <div style="display:grid;gap:16px;grid-template-columns:1fr 1fr"><label style="grid-column:1/-1"><span class="alabel">Type</span><select class="ainput" id="bk"><option value="vacation">Congés / fermeture</option><option value="block">Bloquer un créneau</option></select></label>
+   <label><span class="alabel">Du</span><input class="ainput" type="date" id="b1" style="color-scheme:dark"></label><label><span class="alabel">À partir de (option)</span><input class="ainput" type="time" id="b1t" style="color-scheme:dark"></label>
+   <label><span class="alabel">Au</span><input class="ainput" type="date" id="b2" style="color-scheme:dark"></label><label><span class="alabel">Jusqu'à (option)</span><input class="ainput" type="time" id="b2t" style="color-scheme:dark"></label>
+   <label style="grid-column:1/-1"><span class="alabel">Motif</span><input class="ainput" id="br"></label></div><button class="abtn" id="badd" style="margin-top:20px">Ajouter</button><p class="err" id="berr"></p></section>
+  <section class="card"><h2>Périodes à venir</h2>${blocks.length?blocks.map(b=>`<div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)"><div style="font-size:14px"><p>${b.kind==="vacation"?"Congés":"Créneau bloqué"}${b.reason?" — "+esc(b.reason):""}</p><p class="hint">${new Date(b.start).toLocaleString("fr-FR",{dateStyle:"medium",timeStyle:"short"})} → ${new Date(b.end).toLocaleString("fr-FR",{dateStyle:"medium",timeStyle:"short"})}</p></div><button class="abtn r" data-rm="${b.id}">Supprimer</button></div>`).join(""):'<p class="empty">Aucune période bloquée.</p>'}</section></div></div>`);
+}
+function bindHours(){
+  document.querySelectorAll(".dayrow").forEach(row=>{const wd=+row.dataset.wd;
+    const read=()=>[...row.querySelectorAll(".range")].map(r=>({weekday:wd,opens:r.querySelector('[data-k="o"]').value,closes:r.querySelector('[data-k="c"]').value}));
+    row.querySelector("[data-add]").onclick=()=>{const cur=read();S.hours=S.hours.filter(h=>h.weekday!==wd).concat(cur,[cur.length?{weekday:wd,opens:"14:00",closes:"19:00"}:{weekday:wd,opens:"09:30",closes:"12:30"}]);render()};
+    row.querySelectorAll("[data-del]").forEach(x=>x.onclick=()=>{const cur=read();cur.splice(+x.dataset.del,1);S.hours=S.hours.filter(h=>h.weekday!==wd).concat(cur);render()});
+    row.querySelector("[data-save]").onclick=()=>{const cur=read().sort((a,b)=>a.opens.localeCompare(b.opens));
+      for(let i=0;i<cur.length;i++){if(!cur[i].opens||!cur[i].closes||cur[i].closes<=cur[i].opens||(i&&cur[i].opens<cur[i-1].closes)){toast("Horaires invalides ou qui se chevauchent");return}}
+      S.hours=S.hours.filter(h=>h.weekday!==wd).concat(cur);save();toast(cur.length?"Horaires enregistrés":"Jour marqué fermé");render()}});
+  $("#badd").onclick=()=>{const d1=$("#b1").value,d2=$("#b2").value||d1;if(!d1){$("#berr").textContent="Indiquez au moins une date.";return}
+    const s=at(d1,$("#b1t").value||"00:00"),e=$("#b2t").value?at(d2,$("#b2t").value):at(addDays(d2,1),"00:00");
+    if(e<=s){$("#berr").textContent="La fin doit être après le début.";return}
+    S.blocks.push({id:"k"+Date.now().toString(36),kind:$("#bk").value,start:s.toISOString(),end:e.toISOString(),reason:$("#br").value.trim()});save();
+    const n=live().filter(b=>+new Date(b.start)<+e&&+new Date(b.end)>+s).length;toast(n?`Ajouté — attention : ${n} rendez-vous déjà réservé(s) sur cette période`:"Période ajoutée — créneaux retirés du site");render()};
+  document.querySelectorAll("[data-rm]").forEach(x=>x.onclick=()=>{S.blocks=S.blocks.filter(b=>b.id!==x.dataset.rm);save();render()});
+}
+function servicesPage(){
+  return adminShell("svc",`<div class="ph"><div><h1>Prestations</h1><p class="sub">Nom, prix, durée et disponibilité en ligne.</p></div></div><div style="display:grid;gap:24px;max-width:860px">
+  ${S.services.map(s=>`<section class="card" data-sid="${s.id}"><h2>${s.active?"En ligne":"Masquée"}</h2><div style="display:grid;gap:16px;grid-template-columns:2fr 1fr 1fr">
+   <label><span class="alabel">Nom</span><input class="ainput" data-f="name" value="${esc(s.name)}"></label><label><span class="alabel">Prix (€)</span><input class="ainput" data-f="price" inputmode="decimal" value="${String(s.price/100).replace(".",",")}"></label><label><span class="alabel">Durée (min)</span><input class="ainput" data-f="duration" type="number" min="5" step="5" value="${s.duration}"></label>
+   <label style="grid-column:1/-1"><span class="alabel">Description</span><input class="ainput" data-f="description" value="${esc(s.description)}"></label></div>
+   <label style="display:flex;gap:10px;align-items:center;margin-top:16px;font-size:14px"><input type="checkbox" data-f="active" ${s.active?"checked":""} style="accent-color:#B8AD99"> Proposée à la réservation en ligne</label>
+   <button class="abtn" data-ssave style="margin-top:16px">Enregistrer</button></section>`).join("")}</div>`);
+}
+function bindServices(){document.querySelectorAll("[data-sid]").forEach(c=>c.querySelector("[data-ssave]").onclick=()=>{const s=S.services.find(x=>x.id===c.dataset.sid);const g=k=>c.querySelector(`[data-f="${k}"]`);
+  const p=Math.round(parseFloat(g("price").value.replace(",","."))*100),d=parseInt(g("duration").value,10);if(!g("name").value.trim()||!(p>=0)||!(d>=5)){toast("Valeurs invalides");return}
+  Object.assign(s,{name:g("name").value.trim(),price:p,duration:d,description:g("description").value.trim(),active:g("active").checked});save();toast("Prestation mise à jour — visible sur le site");render()})}
+
+/* ---------- Routeur ---------- */
+function render(scrollTop){
+  const h=location.hash.replace(/^#/,"")||"/";const p=h.split("/").filter(Boolean);
+  const app=$("#app");let after=()=>{};
+  window.onscroll=null;document.body.style.overflow="";
+  if(p[0]==="admin"){demoBar("admin");
+    if(p[1]==="agenda"){app.innerHTML=agenda(p[2],p[3])}
+    else if(p[1]==="rdv"){app.innerHTML=rdvDetail(p[2]);after=()=>bindDetail(p[2])}
+    else if(p[1]==="nouveau"){app.innerHTML=newBooking(p[2]);after=bindNew}
+    else if(p[1]==="horaires"){app.innerHTML=hoursPage();after=bindHours}
+    else if(p[1]==="prestations"){app.innerHTML=servicesPage();after=bindServices}
+    else app.innerHTML=dashboard();
+  } else {demoBar("site");
+    if(p[0]==="reserver"){app.innerHTML=reserve(p[1]);after=()=>{bindHeader();bindReserve()}}
+    else if(p[0]==="rdv"){app.innerHTML=confirmation(p[1],p[2]==="nouveau");after=()=>{bindHeader();bindConfirmation(p[1])}}
+    else {app.innerHTML=home();after=()=>{bindHeader();observe()}}
+  }
+  after();if(scrollTop)scrollTo({top:0});
+}
+addEventListener("hashchange",()=>render(true));
+$("#reset").onclick=e=>{e.preventDefault();if(confirm("Remettre la démo à zéro ?")){S=seed();save();Object.assign(B,{step:"service",service:null,date:null,slot:null,notice:null,win:null});location.hash="#/";render(true);toast("Démo réinitialisée")}};
+render();
+</script>
+</body>
+</html>
