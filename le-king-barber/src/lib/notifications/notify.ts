@@ -27,19 +27,20 @@ async function log(bookingId: string, kind: BookingEmailKind, recipient: string 
 
 /**
  * Envoie les emails liés à un évènement de réservation et les journalise.
- * - Client : uniquement s'il a donné un email.
+ * - Client : à l'email fourni avec CE rendez-vous (jamais celui d'une autre réservation).
  * - Salon : à chaque nouvelle réservation en ligne et annulation client.
  * Si le service d'email n'est pas configuré, l'évènement est journalisé « skipped ».
  */
 export async function notifyBooking(bookingId: string, event: "created" | "cancelled_by_customer" | "cancelled_by_admin" | "updated" | "reminder") {
   const supabase = createServiceClient();
   const [{ data: b }, { data: s }] = await Promise.all([
-    supabase.from("bookings").select("*, customer:customers(first_name, last_name, phone, email)").eq("id", bookingId).single(),
+    supabase.from("bookings").select("*, customer:customers(first_name, last_name, phone)").eq("id", bookingId).single(),
     supabase.from("business_settings").select("*").eq("id", 1).single(),
   ]);
   if (!b || !s) return;
   const settings = s as BusinessSettings;
-  const customer = b.customer as { first_name: string; last_name: string; phone: string; email: string | null } | null;
+  const customer = b.customer as { first_name: string; last_name: string; phone: string } | null;
+  const contactEmail = b.contact_email as string | null;
   if (!customer) return;
 
   const manageUrl =
@@ -79,16 +80,16 @@ export async function notifyBooking(bookingId: string, event: "created" | "cance
   };
 
   const tasks: Promise<void>[] = [];
-  if (customer.email) {
+  if (contactEmail) {
     const kind = customerKind[event];
     const mail = renderBookingEmail(kind, data);
     tasks.push(
       sendEmail({
-        to: customer.email,
+        to: contactEmail,
         ...mail,
         replyTo: settings.email,
         attachments: kind === "reminder" ? undefined : [{ filename: "rendez-vous.ics", content: ics, contentType: "text/calendar" }],
-      }).then((r) => log(b.id, kind, customer.email, r)),
+      }).then((r) => log(b.id, kind, contactEmail, r)),
     );
   }
   if (serverEnv.barberNotificationEmail && (event === "created" || event === "cancelled_by_customer")) {

@@ -127,6 +127,10 @@ create table public.bookings (
   status text not null default 'confirmed'
     check (status in ('confirmed', 'cancelled', 'completed', 'no_show')),
   source text not null default 'online' check (source in ('online', 'admin')),
+  -- Email fourni AVEC ce rendez-vous : seule adresse utilisée pour ses notifications.
+  -- (Le téléphone n'étant pas vérifié, une réservation en ligne ne doit jamais
+  -- modifier les coordonnées d'un client existant.)
+  contact_email text check (contact_email is null or char_length(contact_email) <= 254),
   customer_note text check (customer_note is null or char_length(customer_note) <= 500),
   admin_note text check (admin_note is null or char_length(admin_note) <= 1000),
   manage_token_hash text unique,

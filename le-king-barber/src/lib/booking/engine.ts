@@ -146,10 +146,10 @@ export async function findBookingByToken(token: string) {
   if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) return null;
   const { data } = await createServiceClient()
     .from("bookings")
-    .select("*, customer:customers(first_name, last_name, email)")
+    .select("*")
     .eq("manage_token_hash", hashToken(token))
     .maybeSingle();
-  return data as (Booking & { customer: { first_name: string; last_name: string; email: string | null } | null }) | null;
+  return data as Booking | null;
 }
 
 export function canCustomerCancel(booking: Pick<Booking, "status" | "starts_at">, settings: Pick<BusinessSettings, "cancellation_notice_minutes">, now = new Date()) {

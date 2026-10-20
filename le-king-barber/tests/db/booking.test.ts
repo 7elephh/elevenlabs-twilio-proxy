@@ -153,6 +153,21 @@ describe("create_booking", () => {
     expect(c.rows).toEqual([{ first_name: "Alex" }]);
   });
 
+  it("une réservation en ligne ne peut pas détourner l'email d'un client existant", async () => {
+    // Client connu du salon, sans email (réservé par téléphone)
+    const victim = await book(client, SLOT, { source: "admin" });
+    // Un inconnu réserve en ligne avec le même numéro et son propre email
+    const attacker = await client.query(
+      `select * from public.create_booking($1, ${SLOT} + interval '1 day', 'X', 'Y', '+33600000001', 'pirate@example.com', null, 'online', null)`,
+      [serviceId],
+    );
+    expect(attacker.rows[0].contact_email).toBe("pirate@example.com");
+    const c = await client.query("select email from public.customers where id = $1", [victim.customer_id]);
+    expect(c.rows[0].email).toBeNull();
+    const v = await client.query("select contact_email from public.bookings where id = $1", [victim.id]);
+    expect(v.rows[0].contact_email).toBeNull();
+  });
+
   it("interdit d'activer une prestation sans durée", async () => {
     const msg = await errorOf(
       client.query("insert into public.services (name, price_cents, is_active) values ('Sans durée', 1000, true)"),

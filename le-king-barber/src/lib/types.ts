@@ -83,6 +83,7 @@ export interface Booking {
   ends_at: string;
   status: BookingStatus;
   source: "online" | "admin";
+  contact_email: string | null;
   customer_note: string | null;
   admin_note: string | null;
   cancelled_at: string | null;

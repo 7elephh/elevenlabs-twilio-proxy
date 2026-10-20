@@ -79,6 +79,7 @@ declare
   v_end timestamptz;
   v_active int;
   v_booking public.bookings;
+  v_contact_email text;
 begin
   perform pg_advisory_xact_lock(hashtext('lkb:bookings'));
 
@@ -122,9 +123,17 @@ begin
     set first_name = case when p_source = 'admin' then excluded.first_name else public.customers.first_name end,
         last_name = case when p_source = 'admin' then excluded.last_name else public.customers.last_name end,
         email = case when p_source = 'admin' then coalesce(excluded.email, public.customers.email)
-                     else coalesce(public.customers.email, excluded.email) end,
+                     else public.customers.email end,
         anonymized_at = null
   returning id into v_customer_id;
+
+  -- En ligne : uniquement l'email saisi pour cette réservation.
+  -- Par le salon : l'email saisi, sinon celui de la fiche client.
+  if p_source = 'admin' then
+    select coalesce(nullif(p_email, ''), email) into v_contact_email from public.customers where id = v_customer_id;
+  else
+    v_contact_email := nullif(p_email, '');
+  end if;
 
   if p_source = 'online' then
     select count(*) into v_active from public.bookings
@@ -137,10 +146,10 @@ begin
   begin
     insert into public.bookings (
       customer_id, service_id, service_name, price_cents, duration_minutes,
-      starts_at, ends_at, source, customer_note, manage_token_hash
+      starts_at, ends_at, source, contact_email, customer_note, manage_token_hash
     ) values (
       v_customer_id, v_service.id, v_service.name, v_service.price_cents, v_service.duration_minutes,
-      p_starts_at, v_end, p_source, nullif(p_customer_note, ''), p_manage_token_hash
+      p_starts_at, v_end, p_source, v_contact_email, nullif(p_customer_note, ''), p_manage_token_hash
     ) returning * into v_booking;
   exception when exclusion_violation then
     raise exception 'slot_taken' using errcode = 'P0001';
@@ -162,7 +171,7 @@ begin
      set first_name = 'Client', last_name = 'anonymisé', phone = 'anon-' || id::text,
          email = null, notes = null, anonymized_at = now()
    where id = p_customer_id;
-  update public.bookings set customer_note = null, manage_token_hash = null
+  update public.bookings set customer_note = null, contact_email = null, manage_token_hash = null
    where customer_id = p_customer_id;
   update public.notification_log set recipient = null
    where booking_id in (select id from public.bookings where customer_id = p_customer_id);

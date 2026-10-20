@@ -33,12 +33,12 @@ export async function GET(request: NextRequest) {
 
   const { data: due } = await supabase
     .from("bookings")
-    .select("id, customer:customers!inner(email)")
+    .select("id")
     .eq("status", "confirmed")
     .is("reminder_sent_at", null)
     .gte("starts_at", from)
     .lt("starts_at", to)
-    .not("customers.email", "is", null);
+    .not("contact_email", "is", null);
 
   let reminders = 0;
   for (const b of due ?? []) {

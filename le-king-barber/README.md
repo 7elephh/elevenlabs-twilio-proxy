@@ -41,7 +41,7 @@ Google Calendar et les emails sont **secondaires** : s'ils échouent, la réserv
 
 ```bash
 npm test          # 32 tests unitaires (disponibilités, DST, validation, chiffrement)
-npm run test:db   # 22 tests sur un vrai PostgreSQL éphémère (conflits, concurrence, annulation, RLS, RGPD)
+npm run test:db   # 23 tests sur un vrai PostgreSQL éphémère (conflits, concurrence, annulation, RLS, RGPD)
 ```
 
 `test:db` nécessite les binaires PostgreSQL ≥ 15 (`pg_ctl`, `initdb`).
