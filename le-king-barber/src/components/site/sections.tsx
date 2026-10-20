@@ -43,7 +43,7 @@ export function Hero({ settings }: { settings: BusinessSettings }) {
       <div className="grain pointer-events-none absolute inset-0 opacity-[0.07] mix-blend-overlay" />
 
       <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-32 md:px-10 md:pb-24">
-        <p className="label animate-rise">Barbier · Coiffure masculine</p>
+        <p className="label animate-rise">{settings.city ? `Barbier · ${settings.city}` : "Barbier · Nouveau salon"}</p>
         <h1 className="mt-6 max-w-4xl animate-rise text-[clamp(3.1rem,11vw,7.5rem)] font-light leading-[0.95] tracking-[-0.01em] [animation-delay:120ms]">
           {settings.hero_title}
         </h1>
@@ -57,7 +57,7 @@ export function Hero({ settings }: { settings: BusinessSettings }) {
             Prendre rendez-vous <Arrow />
           </ButtonLink>
           <ButtonLink href="/#prestations" variant="ghost" className="justify-start sm:px-6">
-            Voir les prestations
+            Voir les tarifs
           </ButtonLink>
         </div>
       </div>
@@ -69,9 +69,9 @@ export function Hero({ settings }: { settings: BusinessSettings }) {
 }
 
 const STEPS = [
-  { title: "Accueil", text: "Un moment pour échanger sur vos habitudes, votre style et vos attentes." },
-  { title: "Diagnostic", text: "Morphologie, nature du cheveu, implantation de la barbe : chaque détail compte." },
-  { title: "Précision", text: "Des gestes maîtrisés, des contours nets et des finitions soignées." },
+  { title: "Écoute", text: "On commence par parler de ce que tu veux, de tes habitudes et de ton style." },
+  { title: "Conseil", text: "Forme du visage, type de cheveu, implantation de la barbe : on t'oriente vers ce qui te va." },
+  { title: "Finitions", text: "Contours nets, dégradés propres, barbe dessinée : le détail fait la différence." },
 ];
 
 export function About({ settings }: { settings: BusinessSettings }) {
@@ -82,13 +82,13 @@ export function About({ settings }: { settings: BusinessSettings }) {
         <Reveal className="md:col-span-5">
           <SectionLabel index="01">Le salon</SectionLabel>
           <h2 className="mt-8 text-[clamp(2.4rem,6vw,4rem)] leading-[1.02]">
-            {settings.about_title ?? "Une maison de grooming"}
+            {settings.about_title ?? "Le salon"}
           </h2>
         </Reveal>
         <Reveal className="md:col-span-6 md:col-start-7" delay={120}>
           <p className="text-lg leading-[1.8] text-ivoire/75 md:text-xl md:leading-[1.75]">
             {settings.about_text ??
-              "Un salon dédié à l'homme, où la coupe et la barbe se travaillent avec exigence. Ici, le temps est pris pour bien faire."}
+              "Le King Barber vient d'ouvrir ses portes. Ici, on prend le temps : on écoute ce que tu veux, on conseille, et on soigne chaque détail jusqu'aux finitions."}
           </p>
           {settings.experience_text && <p className="mt-6 leading-[1.8] text-ivoire/60">{settings.experience_text}</p>}
         </Reveal>
@@ -111,7 +111,7 @@ export function About({ settings }: { settings: BusinessSettings }) {
               </div>
             )}
             <div className={portrait ? "md:col-span-6 md:col-start-7" : "md:col-span-8"}>
-              <p className="label">Votre barbier</p>
+              <p className="label">Ton barbier</p>
               <h3 className="mt-5 text-5xl">{settings.barber_name}</h3>
               {settings.barber_bio && <p className="mt-6 text-lg leading-[1.8] text-ivoire/70">{settings.barber_bio}</p>}
             </div>
@@ -135,7 +135,7 @@ export function Services({ services }: { services: Service[] }) {
             </p>
             <h2 className="mt-8 text-[clamp(2.4rem,6vw,4rem)] leading-[1.02]">La carte</h2>
             <p className="mt-6 max-w-sm leading-relaxed text-graphite">
-              Tarifs et durées indicatifs. Choisissez votre prestation, puis le créneau qui vous convient.
+              Choisis ta prestation, puis ton créneau. Pas besoin d&apos;appeler.
             </p>
           </Reveal>
 
@@ -315,7 +315,7 @@ export function FinalCta() {
       <div className="mx-auto flex max-w-7xl flex-col items-center px-5 py-28 text-center md:px-10 md:py-40">
         <Reveal className="flex flex-col items-center">
           <Logotype className="h-auto w-52 md:w-64" />
-          <p className="mt-12 max-w-md text-lg leading-relaxed text-ivoire/65">Votre prochain rendez-vous se réserve en moins d&apos;une minute.</p>
+          <p className="mt-12 max-w-md text-lg leading-relaxed text-ivoire/65">Ta prochaine coupe, réservée en moins d&apos;une minute.</p>
           <ButtonLink href="/reserver" className="mt-10">
             Prendre rendez-vous <Arrow />
           </ButtonLink>

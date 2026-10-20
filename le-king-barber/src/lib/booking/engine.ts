@@ -19,7 +19,7 @@ import { BOOKING_ERROR_MESSAGES, type BookingRequest } from "@/lib/validation";
 export class BookingError extends Error {
   constructor(
     public code: string,
-    message = BOOKING_ERROR_MESSAGES[code] ?? "Une erreur est survenue. Merci de réessayer.",
+    message = BOOKING_ERROR_MESSAGES[code] ?? "Une erreur est survenue. Réessaie dans un instant.",
     public status = 409,
   ) {
     super(message);
@@ -161,7 +161,7 @@ export async function cancelBookingByToken(token: string): Promise<Booking> {
   if (!booking) throw new BookingError("not_found", "Rendez-vous introuvable.", 404);
   const ctx = await loadBookingContext();
   if (!canCustomerCancel(booking, ctx.settings)) {
-    throw new BookingError("too_late", "Ce rendez-vous ne peut plus être annulé en ligne. Merci de contacter le salon.");
+    throw new BookingError("too_late", "Ce rendez-vous ne peut plus être annulé en ligne. Contacte directement le salon.");
   }
   const { data, error } = await createServiceClient()
     .from("bookings")

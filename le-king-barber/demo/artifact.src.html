@@ -266,7 +266,7 @@ function seed(){
   const hours=[];for(let d=2;d<=6;d++){hours.push({weekday:d,opens:"09:30",closes:"12:30"},{weekday:d,opens:"14:00",closes:"19:00"})}
   const services=[
     {id:"s1",name:"Coupe + barbe",description:"Coupe sur mesure et taille de barbe précise, finitions soignées.",price:2000,duration:45,active:true},
-    {id:"s2",name:"Coupe",description:"Coupe aux ciseaux ou à la tondeuse, adaptée à votre style.",price:1500,duration:30,active:true},
+    {id:"s2",name:"Coupe",description:"Coupe aux ciseaux ou à la tondeuse, adaptée à ton style.",price:1500,duration:30,active:true},
     {id:"s3",name:"Taille de barbe",description:"Mise en forme, contours nets et soin.",price:1000,duration:20,active:true},
   ];
   const st={services,hours,blocks:[],bookings:[],settings:{slot:15,notice:60,advance:60},salon:{address:"",city:"",phone:"",instagram:"",barber:"",bio:""}};
@@ -338,12 +338,13 @@ function footer(){return `<footer><div class="wrap"><div class="row"><img src="$
 <nav><a href="#/reserver">Réserver</a><span>Mentions légales</span><span>Confidentialité</span></nav></div>
 <p style="margin-top:32px;font-size:11px;letter-spacing:.12em;color:rgba(242,237,228,.35)">© ${new Date().getFullYear()} Le King Barber — version de démonstration</p></div></footer>`}
 
+function cityName(){return (S.salon.city||"").replace(/^\s*\d{4,5}\s*/,"").trim()}
 function infos(){const c=S.salon,addr=[c.address,c.city].filter(Boolean).join(", ");
   const maps=addr?`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent("Le King Barber, "+addr)}`:"";
   const ig=c.instagram?(c.instagram.startsWith("http")?c.instagram:`https://instagram.com/${c.instagram.replace(/^@/,"")}`):"";
   return `<dl style="margin-top:48px;display:grid;gap:40px"><div><dt class="label">Adresse</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8)">${addr?esc(addr):'<span style="color:rgba(242,237,228,.45)">Adresse communiquée prochainement.</span>'}</dd>${maps?`<a class="btn btn-ghost" style="margin-top:8px" href="${maps}" target="_blank" rel="noopener noreferrer">Itinéraire ${ARROW}</a>`:""}</div>
   <div><dt class="label">Contact</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8);display:grid;gap:6px">${c.phone?`<span style="user-select:all">${esc(c.phone)}</span>`:'<span style="color:rgba(242,237,228,.45)">Téléphone communiqué prochainement.</span>'}${ig?`<a href="${esc(ig)}" target="_blank" rel="noopener noreferrer" style="color:var(--champagne)">Instagram ${esc(c.instagram.startsWith("@")?c.instagram:"")}</a>`:""}</dd></div></dl>`}
-function barberBlock(){const c=S.salon;if(!c.barber)return "";return `<div class="reveal" style="margin-top:64px;max-width:640px"><p class="label">Votre barbier</p><h3 style="margin-top:20px;font-size:48px">${esc(c.barber)}</h3>${c.bio?`<p style="margin-top:20px;font-size:18px;line-height:1.8;color:rgba(242,237,228,.7)">${esc(c.bio)}</p>`:""}</div>`}
+function barberBlock(){const c=S.salon;if(!c.barber)return "";return `<div class="reveal" style="margin-top:64px;max-width:640px"><p class="label">Ton barbier</p><h3 style="margin-top:20px;font-size:48px">${esc(c.barber)}</h3>${c.bio?`<p style="margin-top:20px;font-size:18px;line-height:1.8;color:rgba(242,237,228,.7)">${esc(c.bio)}</p>`:""}</div>`}
 function home(){
   const svc=S.services.filter(s=>s.active);
   const today=isoDay(ymd(new Date()));
@@ -352,22 +353,21 @@ function home(){
   return header()+`
 <main>
 <section class="hero"><img class="wm" src="${MONO}" alt="" aria-hidden="true"><div class="wrap inner">
-  <p class="label rise">Barbier · Coiffure masculine</p>
+  <p class="label rise">Barbier · ${esc(cityName()||"Nouveau salon")}</p>
   <h1 class="rise d1">L'art de soigner son style.</h1>
-  <p class="sub rise d2">Coupe, barbe et soin dans un salon pensé pour l'homme moderne.</p>
-  <div class="ctas rise d3"><a class="btn btn-solid" href="#/reserver">Prendre rendez-vous ${ARROW}</a><a class="btn btn-ghost" href="#/" data-s="prestations" style="justify-content:flex-start">Voir les prestations</a></div>
+  <p class="sub rise d2">Coupes, dégradés et barbe. Nouveau salon, réservation en 30 secondes.</p>
+  <div class="ctas rise d3"><a class="btn btn-solid" href="#/reserver">Prendre rendez-vous ${ARROW}</a><a class="btn btn-ghost" href="#/" data-s="prestations" style="justify-content:flex-start">Voir les tarifs</a></div>
 </div></section>
 
 <section class="s" id="salon" style="background:var(--noir-soft)"><div class="wrap">
-  <div class="grid12"><div class="l reveal"><p class="label sec-label"><span class="n">01</span><span class="r"></span>Le salon</p><h2 class="h2">Une maison de grooming</h2></div>
-  <div class="r reveal"><p class="lead">Chez Le King Barber, chaque rendez-vous est un moment pour soi. Un diagnostic attentif, des gestes précis et des finitions nettes : le style se construit avec méthode, sans précipitation.</p>
-  <p style="margin-top:24px;color:var(--muted);line-height:1.8">Accueil, conseil, coupe et finitions : une expérience calme et maîtrisée, du premier échange au dernier détail.</p></div></div>
-  ${barberBlock()}<div class="steps">${[["Accueil","Un moment pour échanger sur vos habitudes, votre style et vos attentes."],["Diagnostic","Morphologie, nature du cheveu, implantation de la barbe : chaque détail compte."],["Précision","Des gestes maîtrisés, des contours nets et des finitions soignées."]].map((s,i)=>`<div class="reveal" style="transition-delay:${i*120}ms"><span class="k">0${i+1}</span><h3>${s[0]}</h3><p>${s[1]}</p></div>`).join("")}</div>
+  <div class="grid12"><div class="l reveal"><p class="label sec-label"><span class="n">01</span><span class="r"></span>Le salon</p><h2 class="h2">Le salon</h2></div>
+  <div class="r reveal"><p class="lead">Le King Barber vient d'ouvrir ses portes. Ici, on prend le temps : on écoute ce que tu veux, on conseille, et on soigne chaque détail jusqu'aux finitions.</p></div></div>
+  ${barberBlock()}<div class="steps">${[["Écoute","On commence par parler de ce que tu veux, de tes habitudes et de ton style."],["Conseil","Forme du visage, type de cheveu, implantation de la barbe : on t'oriente vers ce qui te va."],["Finitions","Contours nets, dégradés propres, barbe dessinée : le détail fait la différence."]].map((s,i)=>`<div class="reveal" style="transition-delay:${i*120}ms"><span class="k">0${i+1}</span><h3>${s[0]}</h3><p>${s[1]}</p></div>`).join("")}</div>
 </div></section>
 
 <section class="s ivory" id="prestations"><div class="wrap"><div class="grid12">
   <div class="l reveal"><p class="label sec-label" style="color:var(--champagne-dark)"><span class="n" style="color:rgba(17,18,20,.4)">02</span><span class="r" style="background:rgba(143,132,111,.6)"></span>Prestations</p><h2 class="h2">La carte</h2>
-  <p style="margin-top:24px;max-width:360px;color:var(--graphite)">Tarifs et durées indicatifs. Choisissez votre prestation, puis le créneau qui vous convient.</p></div>
+  <p style="margin-top:24px;max-width:360px;color:var(--graphite)">Choisis ta prestation, puis ton créneau. Pas besoin d'appeler.</p></div>
   <div class="r"><div style="border-top:1px solid rgba(17,18,20,.15)">${svc.map((s,i)=>`<a class="svc reveal" style="transition-delay:${i*80}ms" href="#/reserver/${s.id}"><div style="flex:1"><h3>${esc(s.name)}</h3><p class="d">${esc(s.description)}</p><p class="meta">${dur(s.duration)}<span style="width:24px;height:1px;background:currentColor;opacity:.4"></span>Réserver ${ARROW}</p></div><p class="price">${price(s.price)}</p></a>`).join("")}</div></div>
 </div></div></section>
 
@@ -377,7 +377,7 @@ function home(){
   <div class="r reveal"><p class="label">Horaires</p><table class="hours" style="width:100%;margin-top:24px;border-collapse:collapse"><tbody>${rows}</tbody></table></div>
 </div></div></section>
 
-<section class="final"><div class="wrap reveal"><img src="${LOGO}" alt="Le King Barber"><p style="margin:48px auto 0;max-width:420px;font-size:18px;color:rgba(242,237,228,.65)">Votre prochain rendez-vous se réserve en moins d'une minute.</p>
+<section class="final"><div class="wrap reveal"><img src="${LOGO}" alt="Le King Barber"><p style="margin:48px auto 0;max-width:420px;font-size:18px;color:rgba(242,237,228,.65)">Ta prochaine coupe, réservée en moins d'une minute.</p>
 <a class="btn btn-solid" style="margin-top:40px" href="#/reserver">Prendre rendez-vous ${ARROW}</a></div></section>
 </main>`+footer();
 }
@@ -392,7 +392,7 @@ function reserve(pre){
   const steps=[["service","Prestation"],["slot","Créneau"],["details","Coordonnées"]].map(([k,t],i)=>`<button data-step="${k}" ${i>idx?"disabled":""} class="${i===idx?"cur":i<idx?"done":"todo"}"><i>0${i+1}</i> <span class="t">${t}</span></button>${i<2?'<span class="ln"></span>':""}`).join("");
   let body="";
   if(B.step==="service"){
-    body=`<h1>Choisissez votre prestation</h1><div style="margin-top:40px;border-top:1px solid var(--line)" role="radiogroup" aria-label="Prestations">${S.services.filter(s=>s.active).map(s=>`<button class="opt" role="radio" aria-checked="${B.service===s.id}" data-svc="${s.id}"><span style="flex:1"><span class="n">${esc(s.name)}</span><span class="d">${esc(s.description)}</span><span class="m">${dur(s.duration)}</span></span><span class="p">${price(s.price)}</span></button>`).join("")}</div>`;
+    body=`<h1>Choisis ta prestation</h1><div style="margin-top:40px;border-top:1px solid var(--line)" role="radiogroup" aria-label="Prestations">${S.services.filter(s=>s.active).map(s=>`<button class="opt" role="radio" aria-checked="${B.service===s.id}" data-svc="${s.id}"><span style="flex:1"><span class="n">${esc(s.name)}</span><span class="d">${esc(s.description)}</span><span class="m">${dur(s.duration)}</span></span><span class="p">${price(s.price)}</span></button>`).join("")}</div>`;
   } else if(B.step==="slot"){
     const today=ymd(new Date()),last=addDays(today,S.settings.advance);
     const days=availability(B.service,B.win,addDays(B.win,13));
@@ -400,13 +400,13 @@ function reserve(pre){
     const day=days.find(d=>d.date===B.date);
     const groups=day?[["Matin",s=>s.label<"12:00"],["Après-midi",s=>s.label>="12:00"&&s.label<"17:00"],["Fin de journée",s=>s.label>="17:00"]].map(([l,f])=>[l,day.slots.filter(f)]).filter(g=>g[1].length):[];
     const m=parse(B.win);
-    body=`<h1>Choisissez votre créneau</h1>
+    body=`<h1>Choisis ton créneau</h1>
     <div style="margin-top:40px;display:flex;justify-content:space-between;align-items:center"><p class="label">${MONTHS[m.getMonth()]} ${m.getFullYear()}</p>
     <div style="display:flex;gap:8px"><button class="navbtn" id="prev" aria-label="Dates précédentes" ${B.win<=today?"disabled":""}>${ARROWL}</button><button class="navbtn" id="next" aria-label="Dates suivantes" ${addDays(B.win,14)>last?"disabled":""}>${ARROW}</button></div></div>
     <div class="days" role="listbox" aria-label="Jours">${days.map(d=>`<button class="day ${d.date===B.date?"sel":""}" role="option" aria-selected="${d.date===B.date}" data-date="${d.date}" ${d.slots.length?"":"disabled"}><span class="w">${DAYS_S[isoDay(d.date)-1]}</span><span class="n">${parse(d.date).getDate()}</span><span class="dot"></span></button>`).join("")}</div>
     <div style="margin-top:40px;min-height:180px" aria-live="polite">${day?`<p class="fl" style="font-family:var(--serif);font-size:24px">${longDate(day.date)}</p>${groups.map(([l,sl])=>`<p class="label" style="margin-top:28px;color:rgba(242,237,228,.5)">${l}</p><div class="slots">${sl.map(s=>`<button class="slot ${B.slot===s.start?"sel":""}" aria-pressed="${B.slot===s.start}" data-slot="${s.start}">${hLabel(s.label)}</button>`).join("")}</div>`).join("")}`:'<p style="color:var(--muted)">Aucun créneau disponible sur ces dates.</p>'}</div>`;
   } else {
-    body=`<h1>Vos coordonnées</h1><form class="form" id="bform" novalidate>
+    body=`<h1>Tes coordonnées</h1><form class="form" id="bform" novalidate>
       <div><label class="flabel" for="f1">Prénom</label><input class="field" id="f1" name="first" autocomplete="given-name" required></div>
       <div><label class="flabel" for="f2">Nom</label><input class="field" id="f2" name="last" autocomplete="family-name" required></div>
       <div><label class="flabel" for="f3">Téléphone</label><input class="field" id="f3" name="phone" type="tel" inputmode="tel" placeholder="06 12 34 56 78" required></div>
@@ -416,9 +416,9 @@ function reserve(pre){
       <p class="err full" id="ferr" role="alert"></p></form>`;
   }
   const when=B.slot?`<span class="fl" style="display:inline-block">${longDate(ymd(new Date(B.slot)))} · ${hLabel(hm(new Date(B.slot)))}</span>`:"—";
-  const action=B.step==="service"?`<button class="btn btn-solid" disabled>Choisissez une prestation</button>`:B.step==="slot"?`<button class="btn btn-solid" id="cont" ${B.slot?"":"disabled"}>Continuer ${ARROW}</button>`:`<button class="btn btn-solid" id="confirm">Confirmer le rendez-vous</button>`;
+  const action=B.step==="service"?`<button class="btn btn-solid" disabled>Choisis une prestation</button>`:B.step==="slot"?`<button class="btn btn-solid" id="cont" ${B.slot?"":"disabled"}>Continuer ${ARROW}</button>`:`<button class="btn btn-solid" id="confirm">Confirmer le rendez-vous</button>`;
   return header()+`<main class="wrap bk"><div style="min-width:0"><nav class="stepper" aria-label="Étapes">${steps}</nav>${B.notice?`<p class="notice" role="alert">${esc(B.notice)}</p>`:""}${body}</div>
-  <aside class="summary"><p class="label lg">Votre rendez-vous</p>
+  <aside class="summary"><p class="label lg">Ton rendez-vous</p>
    <div class="top"><div style="min-width:0"><p class="lg hint" style="margin-top:24px;letter-spacing:.18em;text-transform:uppercase;font-size:11px">Prestation</p><p class="svcname">${sv?esc(sv.name):"—"}</p><p class="when sm">${B.slot?when:""}</p></div>
    <div class="lg" style="margin-top:20px"><p class="hint" style="letter-spacing:.18em;text-transform:uppercase;font-size:11px">Date</p><p style="margin-top:4px">${when}</p></div>
    <div><p class="lg hint" style="margin-top:20px;letter-spacing:.18em;text-transform:uppercase;font-size:11px">Tarif</p><p style="white-space:nowrap">${sv?price(sv.price):"—"} <span class="hint">${sv?"· "+dur(sv.duration):""}</span></p></div></div>
@@ -434,10 +434,10 @@ function bindReserve(){
   $("#cont")&&($("#cont").onclick=()=>{B.step="details";render(true)});
   $("#confirm")&&($("#confirm").onclick=()=>{
     const f=new FormData($("#bform"));const first=String(f.get("first")).trim(),last=String(f.get("last")).trim(),phone=String(f.get("phone")).replace(/[\s.\-]/g,""),email=String(f.get("email")).trim();
-    const err=!first||!last?"Merci d'indiquer votre prénom et votre nom.":!/^(0[1-9]\d{8}|\+\d{8,15})$/.test(phone)?"Numéro de téléphone invalide.":email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)?"Adresse email invalide.":!f.get("privacy")?"Merci de prendre connaissance de la politique de confidentialité.":"";
+    const err=!first||!last?"Indique ton prénom et ton nom.":!/^(0[1-9]\d{8}|\+\d{8,15})$/.test(phone)?"Numéro de téléphone invalide.":email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)?"Adresse email invalide.":!f.get("privacy")?"Coche la case pour confirmer avoir lu la politique de confidentialité.":"";
     if(err){$("#ferr").textContent=err;return}
     // Revérification au moment de confirmer (comme le serveur du site réel)
-    if(!slotFree(B.service,B.slot)){B.notice="Ce créneau vient d'être réservé. Merci d'en choisir un autre.";B.slot=null;B.step="slot";render(true);return}
+    if(!slotFree(B.service,B.slot)){B.notice="Ce créneau vient d'être pris. Choisis-en un autre.";B.slot=null;B.step="slot";render(true);return}
     const sv=S.services.find(s=>s.id===B.service);const id="b"+Date.now().toString(36);
     S.bookings.push({id,first,last,phone:String(f.get("phone")).trim(),email,note:String(f.get("note")||"").trim(),service:sv.name,serviceId:sv.id,price:sv.price,duration:sv.duration,start:B.slot,end:new Date(+new Date(B.slot)+sv.duration*6e4).toISOString(),status:"confirmed",source:"online",created:new Date().toISOString()});
     save();Object.assign(B,{step:"service",service:null,date:null,slot:null,notice:null,win:null});go(`/rdv/${id}/nouveau`);
@@ -448,9 +448,9 @@ function confirmation(id,isNew){
   const b=S.bookings.find(x=>x.id===id);if(!b)return header()+`<main class="wrap" style="padding:160px 20px">Rendez-vous introuvable.</main>`;
   const st=new Date(b.start),cancelled=b.status==="cancelled";
   return header()+`<main class="wrap" style="max-width:760px;padding-top:128px;padding-bottom:140px">
-  <p class="label rise">${cancelled?"Rendez-vous annulé":isNew?"Réservation confirmée":"Mon rendez-vous"}</p>
-  <h1 class="rise d1" style="margin-top:24px;font-size:clamp(2.6rem,8vw,4.5rem);line-height:.98">${cancelled?"Ce rendez-vous a été annulé.":isNew?`Merci ${esc(b.first)}, à très vite.`:"Votre rendez-vous"}</h1>
-  ${isNew&&!cancelled?`<p class="rise d2" style="margin-top:24px;max-width:480px;color:rgba(242,237,228,.7);line-height:1.7">Votre créneau est réservé. Sur le site réel, ${b.email?"un email de confirmation est envoyé et ":""}un lien personnel permet de retrouver ou d'annuler le rendez-vous.</p>`:""}
+  <p class="label rise">${cancelled?"Rendez-vous annulé":isNew?"Réservation confirmée":"Ton rendez-vous"}</p>
+  <h1 class="rise d1" style="margin-top:24px;font-size:clamp(2.6rem,8vw,4.5rem);line-height:.98">${cancelled?"Ce rendez-vous a été annulé.":isNew?`Merci ${esc(b.first)}, à très vite.`:"Ton rendez-vous"}</h1>
+  ${isNew&&!cancelled?`<p class="rise d2" style="margin-top:24px;max-width:480px;color:rgba(242,237,228,.7);line-height:1.7">Ton créneau est réservé. Sur le site réel, ${b.email?"un email de confirmation est envoyé et ":""}un lien personnel permet de retrouver ou d'annuler le rendez-vous.</p>`:""}
   <dl class="dl rise d3"><div><dt>Prestation</dt><dd>${esc(b.service)}</dd></div><div><dt>Date</dt><dd class="fl">${longDate(ymd(st))}</dd></div><div><dt>Heure</dt><dd>${hLabel(hm(st))}</dd></div><div><dt>Durée</dt><dd>${dur(b.duration)}</dd></div><div><dt>Tarif</dt><dd>${price(b.price)}</dd></div></dl>
   ${cancelled?`<a class="btn btn-solid" style="margin-top:40px" href="#/reserver">Reprendre rendez-vous ${ARROW}</a>`:`<div style="margin-top:40px;display:flex;flex-wrap:wrap;gap:16px"><a class="btn btn-outline" href="#/admin/agenda/jour/${ymd(st)}">Voir côté salon ${ARROW}</a></div>
   <div style="margin-top:56px" id="cz"><button class="btn btn-ghost" id="cancel">Annuler ce rendez-vous</button></div>`}
@@ -458,7 +458,7 @@ function confirmation(id,isNew){
 }
 function bindConfirmation(id){
   const b=S.bookings.find(x=>x.id===id);if(!b)return;
-  $("#cancel")&&($("#cancel").onclick=()=>{$("#cz").innerHTML=`<div style="border:1px solid rgba(242,237,228,.15);padding:24px"><p>Confirmez-vous l'annulation ? Le créneau sera libéré pour un autre client.</p><div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px"><button class="btn btn-solid" id="yes">Oui, annuler</button><button class="btn btn-outline" id="no">Garder mon rendez-vous</button></div></div>`;
+  $("#cancel")&&($("#cancel").onclick=()=>{$("#cz").innerHTML=`<div style="border:1px solid rgba(242,237,228,.15);padding:24px"><p>Tu confirmes l'annulation ? Le créneau sera libéré pour un autre client.</p><div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px"><button class="btn btn-solid" id="yes">Oui, annuler</button><button class="btn btn-outline" id="no">Garder mon rendez-vous</button></div></div>`;
     $("#yes").onclick=()=>{b.status="cancelled";b.cancelledBy="client";save();render()};$("#no").onclick=()=>render()});
 }
 

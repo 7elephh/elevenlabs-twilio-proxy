@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     template: "%s — Le King Barber",
   },
   description:
-    "Le King Barber, salon de coiffure masculine et barbier. Coupe, barbe et soin. Réservez votre rendez-vous en ligne en quelques secondes.",
+    "Le King Barber, salon de coiffure masculine et barbier. Coupes, dégradés et barbe. Nouveau salon, réservation en ligne en 30 secondes.",
   applicationName: "Le King Barber",
   openGraph: {
     type: "website",
     locale: "fr_FR",
     siteName: "Le King Barber",
     title: "Le King Barber — L'art de soigner son style",
-    description: "Coupe, barbe et soin. Réservez votre rendez-vous en ligne.",
+    description: "Coupes, dégradés et barbe. Réservation en ligne en 30 secondes.",
   },
   twitter: { card: "summary_large_image" },
   formatDetection: { telephone: false },

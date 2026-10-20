@@ -65,7 +65,7 @@ export function BookingFlow({ services, today, maxAdvanceDays, initialServiceId,
         }
       } catch (e) {
         setDays([]);
-        setNotice(e instanceof Error && e.message ? e.message : "Impossible de charger les disponibilités.");
+        setNotice(e instanceof Error && e.message ? e.message : "Impossible de charger les disponibilités. Réessaie dans un instant.");
       } finally {
         setLoading(false);
       }
@@ -132,17 +132,17 @@ export function BookingFlow({ services, today, maxAdvanceDays, initialServiceId,
       }
       if (res.status === 422) {
         setFieldErrors(json.fieldErrors ?? {});
-        setNotice(json.message ?? "Merci de vérifier le formulaire.");
+        setNotice(json.message ?? "Vérifie le formulaire.");
       } else if (res.status === 409 && ["slot_taken", "slot_unavailable"].includes(json.error)) {
         setNotice(json.message);
         setSlot(null);
         setStep("slot");
         void loadDays(service.id, windowStart, true);
       } else {
-        setNotice(json.message ?? "Une erreur est survenue. Merci de réessayer.");
+        setNotice(json.message ?? "Une erreur est survenue. Réessaie dans un instant.");
       }
     } catch {
-      setNotice("Connexion impossible. Vérifiez votre réseau et réessayez.");
+      setNotice("Connexion impossible. Vérifie ta connexion et réessaie.");
     } finally {
       setSubmitting(false);
     }
@@ -179,7 +179,7 @@ export function BookingFlow({ services, today, maxAdvanceDays, initialServiceId,
         {step === "service" && (
           <section aria-labelledby="step-title" className="mt-10 animate-rise">
             <h1 id="step-title" ref={headingRef} tabIndex={-1} className="text-[clamp(2.4rem,7vw,3.75rem)] leading-none outline-none">
-              Choisissez votre prestation
+              Choisis ta prestation
             </h1>
             <div className="mt-10 border-t border-ivoire/10" role="radiogroup" aria-label="Prestations">
               {services.map((s) => (
@@ -207,7 +207,7 @@ export function BookingFlow({ services, today, maxAdvanceDays, initialServiceId,
         {step === "slot" && service && (
           <section aria-labelledby="step-title" className="mt-10 animate-rise">
             <h1 id="step-title" ref={headingRef} tabIndex={-1} className="text-[clamp(2.4rem,7vw,3.75rem)] leading-none outline-none">
-              Choisissez votre créneau
+              Choisis ton créneau
             </h1>
 
             <div className="mt-10 flex items-center justify-between">
@@ -314,7 +314,7 @@ export function BookingFlow({ services, today, maxAdvanceDays, initialServiceId,
         {step === "details" && service && slot && (
           <section aria-labelledby="step-title" className="mt-10 animate-rise">
             <h1 id="step-title" ref={headingRef} tabIndex={-1} className="text-[clamp(2.4rem,7vw,3.75rem)] leading-none outline-none">
-              Vos coordonnées
+              Tes coordonnées
             </h1>
             <form id="booking-form" onSubmit={submit} className="mt-10 grid gap-6 sm:grid-cols-2" noValidate>
               <Field label="Prénom" name="firstName" autoComplete="given-name" error={fieldErrors.firstName} required />
@@ -349,7 +349,7 @@ export function BookingFlow({ services, today, maxAdvanceDays, initialServiceId,
       {/* Récapitulatif : colonne sur ordinateur, barre fixe sur mobile */}
       <aside className="md:col-span-4">
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ivoire/10 bg-noir/95 px-5 pt-4 backdrop-blur-md md:sticky md:top-32 md:border md:bg-noir-soft md:p-8" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
-          <p className="label hidden md:block">Votre rendez-vous</p>
+          <p className="label hidden md:block">Ton rendez-vous</p>
           <dl className="flex items-center justify-between gap-4 text-sm md:mt-6 md:block md:space-y-5">
             <div className="min-w-0">
               <dt className="hidden text-[11px] uppercase tracking-[0.18em] text-ivoire/45 md:block">Prestation</dt>
@@ -372,7 +372,7 @@ export function BookingFlow({ services, today, maxAdvanceDays, initialServiceId,
           <div className="mt-4 md:mt-8">
             {step === "service" && (
               <Button type="button" className="w-full" disabled>
-                Choisissez une prestation
+                Choisis une prestation
               </Button>
             )}
             {step === "slot" && (

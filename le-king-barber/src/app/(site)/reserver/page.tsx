@@ -8,7 +8,7 @@ import { localDateOf } from "@/lib/time";
 
 export const metadata: Metadata = {
   title: "Prendre rendez-vous",
-  description: "Réservez votre coupe ou votre taille de barbe chez Le King Barber : choisissez la prestation, le jour et l'heure.",
+  description: "Réserve ta coupe ou ta barbe chez Le King Barber : choisis la prestation, le jour et l'heure. Pas besoin d'appeler.",
   alternates: { canonical: "/reserver" },
 };
 

@@ -56,7 +56,7 @@ export const bookingRequestSchema = z.object({
     .max(500, "500 caractères maximum")
     .optional()
     .transform((v) => v || null),
-  privacyAccepted: z.literal(true, { message: "Merci de prendre connaissance de la politique de confidentialité" }),
+  privacyAccepted: z.literal(true, { message: "Coche la case pour confirmer avoir lu la politique de confidentialité" }),
   // Champ piège invisible : doit rester vide.
   website: z.string().max(0).optional(),
 });
@@ -71,10 +71,10 @@ export const availabilityQuerySchema = z.object({
 
 /** Erreurs métier renvoyées par la base, traduites pour le client. */
 export const BOOKING_ERROR_MESSAGES: Record<string, string> = {
-  slot_taken: "Ce créneau vient d'être réservé. Merci d'en choisir un autre.",
-  slot_unavailable: "Ce créneau n'est plus disponible. Merci d'en choisir un autre.",
+  slot_taken: "Ce créneau vient d'être pris. Choisis-en un autre.",
+  slot_unavailable: "Ce créneau n'est plus disponible. Choisis-en un autre.",
   service_unavailable: "Cette prestation n'est pas disponible à la réservation en ligne.",
   booking_disabled: "La réservation en ligne est momentanément fermée.",
-  too_many_bookings: "Vous avez déjà des rendez-vous à venir. Contactez le salon pour en ajouter un.",
-  rate_limited: "Trop de réservations depuis cette connexion. Réessayez plus tard ou contactez le salon.",
+  too_many_bookings: "Tu as déjà des rendez-vous à venir. Contacte le salon pour en ajouter un.",
+  rate_limited: "Trop de réservations depuis cette connexion. Réessaie plus tard ou contacte le salon.",
 };

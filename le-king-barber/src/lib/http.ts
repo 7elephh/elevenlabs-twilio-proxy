@@ -13,7 +13,7 @@ export function jsonError(error: unknown) {
   }
   console.error(error);
   return NextResponse.json(
-    { error: "unknown", message: "Une erreur est survenue. Merci de réessayer dans un instant." },
+    { error: "unknown", message: "Une erreur est survenue. Réessaie dans un instant." },
     { status: 500, headers: { "Cache-Control": "no-store" } },
   );
 }

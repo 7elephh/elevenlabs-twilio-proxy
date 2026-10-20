@@ -36,14 +36,14 @@ export default async function ManageBookingPage({
 
   return (
     <section className="mx-auto max-w-3xl px-5 pb-24 pt-32 md:px-10 md:pt-40">
-      <p className="label animate-rise">{cancelled ? "Rendez-vous annulé" : justBooked ? "Réservation confirmée" : "Mon rendez-vous"}</p>
+      <p className="label animate-rise">{cancelled ? "Rendez-vous annulé" : justBooked ? "Réservation confirmée" : "Ton rendez-vous"}</p>
       <h1 className="mt-6 animate-rise text-[clamp(2.6rem,8vw,4.5rem)] leading-[0.98] [animation-delay:100ms]">
-        {cancelled ? "Ce rendez-vous a été annulé." : justBooked ? "Merci, à très vite." : "Votre rendez-vous"}
+        {cancelled ? "Ce rendez-vous a été annulé." : justBooked ? "Merci, à très vite." : "Ton rendez-vous"}
       </h1>
       {justBooked && (
         <p className="mt-6 max-w-lg animate-rise leading-relaxed text-ivoire/70 [animation-delay:200ms]">
-          Votre créneau est réservé.{" "}
-          {booking.contact_email && isEmailConfigured() ? "Un email de confirmation vous est envoyé à l'instant." : "Conservez cette page : elle vous permet de retrouver ou d'annuler votre rendez-vous."}
+          Ton créneau est réservé.{" "}
+          {booking.contact_email && isEmailConfigured() ? "Un email de confirmation t'est envoyé à l'instant." : "Garde cette page : elle te permet de retrouver ou d'annuler ton rendez-vous."}
         </p>
       )}
 
@@ -84,7 +84,7 @@ export default async function ManageBookingPage({
           ) : (
             <p className="text-sm text-ivoire/55">
               L&apos;annulation en ligne n&apos;est plus possible pour ce rendez-vous.
-              {settings.phone ? ` Merci de contacter le salon au ${settings.phone}.` : " Merci de contacter le salon."}
+              {settings.phone ? ` Contacte le salon au ${settings.phone}.` : " Contacte directement le salon."}
             </p>
           )}
         </div>

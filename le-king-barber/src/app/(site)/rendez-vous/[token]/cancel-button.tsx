@@ -22,7 +22,7 @@ export function CancelButton({ token }: { token: string }) {
   }
   return (
     <div className="border border-ivoire/15 p-6">
-      <p className="text-ivoire/85">Confirmez-vous l&apos;annulation ? Le créneau sera libéré pour un autre client.</p>
+      <p className="text-ivoire/85">Tu confirmes l&apos;annulation ? Le créneau sera libéré pour un autre client.</p>
       {error && <p role="alert" className="mt-3 text-sm text-champagne">{error}</p>}
       <div className="mt-5 flex flex-wrap gap-3">
         <Button
