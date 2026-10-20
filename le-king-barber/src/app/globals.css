@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-noir font-sans text-ivoire antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    @apply bg-champagne text-noir;
+  }
+  :focus-visible {
+    @apply outline outline-1 outline-offset-4 outline-champagne;
+  }
+  h1, h2, h3 {
+    @apply font-serif font-normal;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  .label {
+    @apply font-sans text-[11px] font-medium uppercase tracking-label text-champagne;
+  }
+  .rule {
+    @apply h-px w-12 bg-champagne/60;
+  }
+  .field {
+    @apply w-full rounded-none border border-ivoire/15 bg-transparent px-4 py-3.5 text-[16px] text-ivoire placeholder:text-ivoire/35 transition-colors duration-300 focus:border-champagne focus:outline-none;
+  }
+  .field-label {
+    @apply mb-2 block text-xs font-medium uppercase tracking-[0.18em] text-ivoire/70;
+  }
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  }
+}
+
+/* Apparition au défilement (désactivée si l'utilisateur préfère moins d'animations) */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
