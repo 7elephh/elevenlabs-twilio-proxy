@@ -156,7 +156,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:12px 28px;font-size:12px;letter-spaci
 .atop{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:12px 20px;padding-top:max(12px,env(safe-area-inset-top))}
 .amain{min-width:0;padding:32px 20px}
 @media(min-width:900px){.amain{padding:48px 40px}}
-.tabs{position:fixed;left:0;right:0;bottom:44px;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(17,18,20,.96);border-top:1px solid var(--line)}
+.tabs{position:fixed;left:0;right:0;bottom:44px;z-index:40;display:grid;grid-template-columns:repeat(6,1fr);background:rgba(17,18,20,.96);border-top:1px solid var(--line)}
 .tabs a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0;font-size:10px;color:rgba(242,237,228,.55)}
 .tabs a.on{color:var(--champagne)}
 @media(min-width:900px){.tabs{display:none}}
@@ -269,7 +269,7 @@ function seed(){
     {id:"s2",name:"Coupe",description:"Coupe aux ciseaux ou à la tondeuse, adaptée à votre style.",price:1500,duration:30,active:true},
     {id:"s3",name:"Taille de barbe",description:"Mise en forme, contours nets et soin.",price:1000,duration:20,active:true},
   ];
-  const st={services,hours,blocks:[],bookings:[],settings:{slot:15,notice:60,advance:60}};
+  const st={services,hours,blocks:[],bookings:[],settings:{slot:15,notice:60,advance:60},salon:{address:"",city:"",phone:"",instagram:"",barber:"",bio:""}};
   // Quelques rendez-vous d'exemple pour remplir l'agenda
   const ex=[["Yanis","B.","s1","10:00"],["Mehdi","K.","s2","11:00"],["Lucas","M.","s3","15:00"],["Adam","R.","s1","17:15"],["Sami","T.","s2","10:30"]];
   let d=today,placed=0,guard=0;
@@ -281,7 +281,7 @@ function seed(){
   return st;
 }
 let S;
-function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch{S=null}if(!S||!S.services)S=seed()}
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch{S=null}if(!S||!S.services)S=seed();S.salon??={address:"",city:"",phone:"",instagram:"",barber:"",bio:""}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch{}}
 load();
 
@@ -338,6 +338,12 @@ function footer(){return `<footer><div class="wrap"><div class="row"><img src="$
 <nav><a href="#/reserver">Réserver</a><span>Mentions légales</span><span>Confidentialité</span></nav></div>
 <p style="margin-top:32px;font-size:11px;letter-spacing:.12em;color:rgba(242,237,228,.35)">© ${new Date().getFullYear()} Le King Barber — version de démonstration</p></div></footer>`}
 
+function infos(){const c=S.salon,addr=[c.address,c.city].filter(Boolean).join(", ");
+  const maps=addr?`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent("Le King Barber, "+addr)}`:"";
+  const ig=c.instagram?(c.instagram.startsWith("http")?c.instagram:`https://instagram.com/${c.instagram.replace(/^@/,"")}`):"";
+  return `<dl style="margin-top:48px;display:grid;gap:40px"><div><dt class="label">Adresse</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8)">${addr?esc(addr):'<span style="color:rgba(242,237,228,.45)">Adresse communiquée prochainement.</span>'}</dd>${maps?`<a class="btn btn-ghost" style="margin-top:8px" href="${maps}" target="_blank" rel="noopener noreferrer">Itinéraire ${ARROW}</a>`:""}</div>
+  <div><dt class="label">Contact</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8);display:grid;gap:6px">${c.phone?`<span style="user-select:all">${esc(c.phone)}</span>`:'<span style="color:rgba(242,237,228,.45)">Téléphone communiqué prochainement.</span>'}${ig?`<a href="${esc(ig)}" target="_blank" rel="noopener noreferrer" style="color:var(--champagne)">Instagram ${esc(c.instagram.startsWith("@")?c.instagram:"")}</a>`:""}</dd></div></dl>`}
+function barberBlock(){const c=S.salon;if(!c.barber)return "";return `<div class="reveal" style="margin-top:64px;max-width:640px"><p class="label">Votre barbier</p><h3 style="margin-top:20px;font-size:48px">${esc(c.barber)}</h3>${c.bio?`<p style="margin-top:20px;font-size:18px;line-height:1.8;color:rgba(242,237,228,.7)">${esc(c.bio)}</p>`:""}</div>`}
 function home(){
   const svc=S.services.filter(s=>s.active);
   const today=isoDay(ymd(new Date()));
@@ -356,7 +362,7 @@ function home(){
   <div class="grid12"><div class="l reveal"><p class="label sec-label"><span class="n">01</span><span class="r"></span>Le salon</p><h2 class="h2">Une maison de grooming</h2></div>
   <div class="r reveal"><p class="lead">Chez Le King Barber, chaque rendez-vous est un moment pour soi. Un diagnostic attentif, des gestes précis et des finitions nettes : le style se construit avec méthode, sans précipitation.</p>
   <p style="margin-top:24px;color:var(--muted);line-height:1.8">Accueil, conseil, coupe et finitions : une expérience calme et maîtrisée, du premier échange au dernier détail.</p></div></div>
-  <div class="steps">${[["Accueil","Un moment pour échanger sur vos habitudes, votre style et vos attentes."],["Diagnostic","Morphologie, nature du cheveu, implantation de la barbe : chaque détail compte."],["Précision","Des gestes maîtrisés, des contours nets et des finitions soignées."]].map((s,i)=>`<div class="reveal" style="transition-delay:${i*120}ms"><span class="k">0${i+1}</span><h3>${s[0]}</h3><p>${s[1]}</p></div>`).join("")}</div>
+  ${barberBlock()}<div class="steps">${[["Accueil","Un moment pour échanger sur vos habitudes, votre style et vos attentes."],["Diagnostic","Morphologie, nature du cheveu, implantation de la barbe : chaque détail compte."],["Précision","Des gestes maîtrisés, des contours nets et des finitions soignées."]].map((s,i)=>`<div class="reveal" style="transition-delay:${i*120}ms"><span class="k">0${i+1}</span><h3>${s[0]}</h3><p>${s[1]}</p></div>`).join("")}</div>
 </div></section>
 
 <section class="s ivory" id="prestations"><div class="wrap"><div class="grid12">
@@ -367,8 +373,7 @@ function home(){
 
 <section class="s" id="infos" style="background:var(--noir-soft);border-top:1px solid var(--line)"><div class="wrap"><div class="grid12">
   <div class="l reveal"><p class="label sec-label"><span class="n">03</span><span class="r"></span>Infos pratiques</p><h2 class="h2">Nous trouver</h2>
-  <dl style="margin-top:48px;display:grid;gap:40px"><div><dt class="label">Adresse</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8)">Adresse du salon</dd><a class="btn btn-ghost" style="margin-top:8px" href="#/" onclick="return false">Itinéraire ${ARROW}</a></div>
-  <div><dt class="label">Contact</dt><dd style="margin-top:12px;font-size:18px;color:rgba(242,237,228,.8)">Téléphone · Instagram</dd></div></dl></div>
+  ${infos()}</div>
   <div class="r reveal"><p class="label">Horaires</p><table class="hours" style="width:100%;margin-top:24px;border-collapse:collapse"><tbody>${rows}</tbody></table></div>
 </div></div></section>
 
@@ -458,9 +463,9 @@ function bindConfirmation(id){
 }
 
 /* ---------- Espace salon ---------- */
-const ICONS={dash:"M3 12l9-8 9 8M5 10v10h14V10",agenda:"M4 6h16v14H4zM4 10h16M9 3v4M15 3v4",rdv:"M5 5h14M5 12h14M5 19h9",hours:"M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z",svc:"M6 3l12 18M18 3L6 21M4 8h4M16 16h4"};
+const ICONS={info:"M3 5h18v14H3zM3 9h18",dash:"M3 12l9-8 9 8M5 10v10h14V10",agenda:"M4 6h16v14H4zM4 10h16M9 3v4M15 3v4",rdv:"M5 5h14M5 12h14M5 19h9",hours:"M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z",svc:"M6 3l12 18M18 3L6 21M4 8h4M16 16h4"};
 const icon=k=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS[k]}"/></svg>`;
-const ANAV=[["dash","#/admin","Tableau de bord","Accueil"],["agenda","#/admin/agenda","Agenda","Agenda"],["rdv","#/admin/nouveau","Nouveau rendez-vous","+ RDV"],["hours","#/admin/horaires","Horaires & congés","Horaires"],["svc","#/admin/prestations","Prestations","Tarifs"]];
+const ANAV=[["dash","#/admin","Tableau de bord","Accueil"],["agenda","#/admin/agenda","Agenda","Agenda"],["rdv","#/admin/nouveau","Nouveau rendez-vous","+ RDV"],["hours","#/admin/horaires","Horaires & congés","Horaires"],["svc","#/admin/prestations","Prestations","Tarifs"],["info","#/admin/infos","Infos du salon","Infos"]];
 function adminShell(active,content){
   return `<div class="adm"><aside class="side"><div><a href="#/admin" style="display:flex;align-items:center;gap:12px;padding:0 12px;margin-bottom:40px"><img src="${MONO}" alt="" style="width:30px"><span class="label" style="color:rgba(242,237,228,.7);letter-spacing:.2em">Espace salon</span></a>
   <nav aria-label="Administration">${ANAV.map(([k,h,l])=>`<a class="it ${k===active?"on":""}" href="${h}">${icon(k)}${l}</a>`).join("")}</nav></div>
@@ -587,6 +592,15 @@ function bindServices(){document.querySelectorAll("[data-sid]").forEach(c=>c.que
   const p=Math.round(parseFloat(g("price").value.replace(",","."))*100),d=parseInt(g("duration").value,10);if(!g("name").value.trim()||!(p>=0)||!(d>=5)){toast("Valeurs invalides");return}
   Object.assign(s,{name:g("name").value.trim(),price:p,duration:d,description:g("description").value.trim(),active:g("active").checked});save();toast("Prestation mise à jour — visible sur le site");render()})}
 
+function infoPage(){const c=S.salon;const f=(id,l,v,ph,full)=>`<label ${full?'style="grid-column:1/-1"':""}><span class="alabel">${l}</span><input class="ainput" id="${id}" value="${esc(v)}" placeholder="${ph}"></label>`;
+  return adminShell("info",`<div class="ph"><div><h1>Infos du salon</h1><p class="sub">Affichées sur le site dès l'enregistrement.</p></div></div>
+  <section class="card" style="max-width:720px"><div style="display:grid;gap:16px;grid-template-columns:1fr 1fr">
+  ${f("ia","Adresse",c.address,"12 rue …",true)}${f("ic","Code postal et ville",c.city,"75000 Paris")}${f("ip","Téléphone",c.phone,"06 …")}
+  ${f("ii","Instagram",c.instagram,"@leking.barber")}${f("ib","Prénom du barbier",c.barber,"Vide = bloc masqué")}
+  <label style="grid-column:1/-1"><span class="alabel">Présentation du barbier</span><textarea class="ainput" id="io" rows="3">${esc(c.bio)}</textarea></label></div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px"><button class="abtn" id="isave">Enregistrer</button><a class="abtn o" href="#/">Voir le site</a></div></section>`)}
+function bindInfo(){$("#isave").onclick=()=>{S.salon={address:$("#ia").value.trim(),city:$("#ic").value.trim(),phone:$("#ip").value.trim(),instagram:$("#ii").value.trim(),barber:$("#ib").value.trim(),bio:$("#io").value.trim()};save();toast("Infos enregistrées, visibles sur le site")}}
+
 /* ---------- Routeur ---------- */
 function render(scrollTop){
   const h=route;const p=h.split("/").filter(Boolean);
@@ -598,6 +612,7 @@ function render(scrollTop){
     else if(p[1]==="nouveau"){app.innerHTML=newBooking(p[2]);after=bindNew}
     else if(p[1]==="horaires"){app.innerHTML=hoursPage();after=bindHours}
     else if(p[1]==="prestations"){app.innerHTML=servicesPage();after=bindServices}
+    else if(p[1]==="infos"){app.innerHTML=infoPage();after=bindInfo}
     else app.innerHTML=dashboard();
   } else {demoBar("site");
     if(p[0]==="reserver"){app.innerHTML=reserve(p[1]);after=()=>{bindHeader();bindReserve()}}
